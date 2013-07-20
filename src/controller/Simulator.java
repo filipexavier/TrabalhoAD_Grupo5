@@ -1,9 +1,12 @@
+package controller;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -14,6 +17,7 @@ import java.util.TreeSet;
 import models.BottleNeck;
 import models.Event;
 import models.EventType;
+import models.Receiver;
 import models.Router;
 import models.Server;
 import models.ServerGroup;
@@ -21,11 +25,11 @@ import models.interfaces.Listener;
 
 
 
-public abstract class Simulator {
+public class Simulator {
 
 	public static List<ServerGroup> serverGroups;
 	public static Map< EventType, Set<Listener> > listeners;
-	public static Set<Event> eventBuffer;
+	public static List<Event> eventBuffer;
 	public static Integer backgroudTraffic;
 	public static Integer maximumSegmentSize;
 	public static Router router;
@@ -33,20 +37,26 @@ public abstract class Simulator {
 	
 	public static void main(String[] args) throws IOException {
 		
-		eventBuffer = new TreeSet<Event>();
+		eventBuffer = new ArrayList<Event>();
 		listeners = new HashMap<EventType, Set<Listener>>();
 		for(EventType type: EventType.values()){
 			listeners.put( type, new HashSet<Listener>() );
 		}
 		readInputFile();
+		Collections.sort(eventBuffer);
+		
 		printInputData();
+		
 		Event event = null;
-		while(eventBuffer.iterator().hasNext()){
-			event = eventBuffer.iterator().next();
+	
+		while(eventBuffer.size() > 0){
+			event = eventBuffer.remove(0);
+			
 			for(Listener listener: listeners.get(event.getType())){
 				listener.listen(event);
 			}
 			
+			Collections.sort(eventBuffer);
 		}
 	}
 
@@ -101,7 +111,6 @@ public abstract class Simulator {
 			//Ler atraso de propagação do grupo i
 			line = reader.readLine();
 			ServerGroup group = new ServerGroup( Integer.parseInt(line) );
-			serverGroups.add(group);
 			
 			//Ler número de servidores no grupo i
 			line = reader.readLine();
@@ -109,8 +118,11 @@ public abstract class Simulator {
 			//Criar servidores (seta sua taxa de transmissao e estabelece relação com o grupo)
 			int j;
 			for(j=0; j<nServers; j++){
+				Receiver receiver = new Receiver();
+				Server server = new Server(broadcastRate, group, receiver);
+				group.getServers().add(server);
+				receiver.setServer(server);
 				
-				new Server(broadcastRate).setGroup(group);
 			}
 			
 		}

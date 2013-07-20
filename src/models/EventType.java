@@ -1,6 +1,6 @@
 package models;
 
 public enum EventType {
-	TIMEOUT, ACK
+	TIME_OUT, ACK, PACKAGE_SENT
 
 }
