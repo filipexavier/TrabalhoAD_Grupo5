@@ -5,22 +5,51 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 
 
 public abstract class Simulator {
 
+	public static List<ServerGroup> serverGroups;
+	public static Integer backgroudTraffic;
+	public static Integer bufferSize;
+	public static BottleNeck bottleNeckPolicy;
+	public static Router router;
+	public static final String fileName = "simulador.txt";
 	
-	
+	@SuppressWarnings("unused")
 	public static void main(String[] args) throws IOException {
 		
-		List<ServerGroup> serverGroups;
+		readInputFile();
+		printInputData();
 		
+	}
+
+	private static void printInputData() {
+		System.out.println("	================ LOG DADOS DO ARQUIVO =================");
+		System.out.println("	=======================================================\n");
+		System.out.println("		Tr‡fego de fundo: " + backgroudTraffic + " bps");
+		System.out.println("		Tamanho do buffer: " + bufferSize + " pacotes");
+		System.out.println("		Pol’tica de atendimento: " + bottleNeckPolicy);
+		System.out.println("		Taxa de transmiss‹o do roteador: " + router.getRate() + " bps");
+		System.out.println("	   ---------------------------------------------");
+		for(ServerGroup group : serverGroups){
+			System.out.println("		Servidores do grupo " + (serverGroups.indexOf(group)+1) +  ": " );
+			for(Server server: group.getServers()){
+				System.out.println("		Servidor com taxa " + server.getBroadcastRate() + "bps do grupo " + (serverGroups.indexOf(server.getGroup())+1)  );
+			}
+		}
+		 		
+		System.out.println("\n	=======================================================");
+		System.out.println("	=======================================================\n");
+		
+	}
+
+	private static void readInputFile() throws IOException {
+
 		BufferedReader reader = null;
 		try {
-			reader = new BufferedReader(new FileReader("file.txt"));
-			//Scanner reader = new Scanner(new FileReader("file.txt"));
+			reader = new BufferedReader(new FileReader(fileName));
 		} catch (FileNotFoundException e) {
 			System.out.println("=============ERRO NA LEITURA DO ARQUIVO DE ENTRADA============");
 			e.printStackTrace();
@@ -28,11 +57,11 @@ public abstract class Simulator {
 		}
 		
 		String line = null;
-		serverGroups = new ArrayList<ServerGroup>();
+		Simulator.serverGroups = new ArrayList<ServerGroup>();
 		
 		//Ler taxa de atendimento do roteador(bps)
 		line = reader.readLine();
-		Router router = new Router( Integer.parseInt(line) );
+		router = new Router( Integer.parseInt(line) );
 		
 		//Ler taxa de transmiss‹o dos servidores(bps)
 		line = reader.readLine();
@@ -59,21 +88,26 @@ public abstract class Simulator {
 			}
 			
 		}
-		//Ler nœmero de servidores no grupo 2
-		line = reader.readLine();
-		
+
 		//Ler tr‡fego de fundo
 		line = reader.readLine();
+		backgroudTraffic = Integer.parseInt(line);
 		
 		//Ler tamanho do buffer
 		line = reader.readLine();
+		bufferSize = Integer.parseInt(line);
+		
 		
 		//Ler pol’tica de gargalo
 		line = reader.readLine();
+		for(BottleNeck policy: BottleNeck.values()){
+			if(line.equals(policy.name()) ){
+				bottleNeckPolicy = policy;
+			}
+		}
 		
 		
 		reader.close();
-		
 	}
 
 }

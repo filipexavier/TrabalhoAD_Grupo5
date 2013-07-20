@@ -1,0 +1,10 @@
+Taxa de atendimento do roteador (bps)
+Taxa de transmissão do servidor (bps)
+Número de grupos de servidores
+Atraso de propagação do grupo 1
+Número de servidores do grupo 1
+Atraso de propagação do grupo 2
+Número de servidores do grupo 2
+Tráfego de fundo
+Tamanho do buffer (pacotes)
+Política de gargalo ( FIFO | RED )

@@ -1,4 +1,4 @@
 
-public enum bottleNeck {
+public enum BottleNeck {
 	FIFO, RED
 }
