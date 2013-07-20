@@ -1,11 +1,11 @@
 Taxa de atendimento do roteador (bps)
 Taxa de transmissão do servidor (bps)
 Número de grupos de servidores
-Atraso de propagação do grupo 1
+Atraso de propagação do grupo 1 (ms)
 Número de servidores do grupo 1
-Atraso de propagação do grupo 2
+Atraso de propagação do grupo 2 (ms)
 Número de servidores do grupo 2
-Tráfego de fundo
+Tráfego de fundo (bps)
 Tamanho do buffer (pacotes)
 MSS - Tamanho máximo do segmento (bits)
 Política de gargalo ( FIFO | RED )

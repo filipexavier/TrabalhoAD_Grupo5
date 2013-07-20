@@ -1,10 +1,11 @@
+package models;
 
 public class Router {
 
 	private Integer rate;
 	private BottleNeck bottleNeckPolicy;
 	private Integer bufferSize;
-	//private List<> queue;
+	//private List<> buffer;
 
 	public Router() {
 	}

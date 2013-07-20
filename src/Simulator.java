@@ -4,13 +4,28 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
+import models.BottleNeck;
+import models.Event;
+import models.EventType;
+import models.Router;
+import models.Server;
+import models.ServerGroup;
+import models.interfaces.Listener;
 
 
 
 public abstract class Simulator {
 
 	public static List<ServerGroup> serverGroups;
+	public static Map< EventType, Set<Listener> > listeners;
+	public static Set<Event> eventBuffer;
 	public static Integer backgroudTraffic;
 	public static Integer maximumSegmentSize;
 	public static Router router;
@@ -18,9 +33,21 @@ public abstract class Simulator {
 	
 	public static void main(String[] args) throws IOException {
 		
+		eventBuffer = new TreeSet<Event>();
+		listeners = new HashMap<EventType, Set<Listener>>();
+		for(EventType type: EventType.values()){
+			listeners.put( type, new HashSet<Listener>() );
+		}
 		readInputFile();
 		printInputData();
-		
+		Event event = null;
+		while(eventBuffer.iterator().hasNext()){
+			event = eventBuffer.iterator().next();
+			for(Listener listener: listeners.get(event.getType())){
+				listener.listen(event);
+			}
+			
+		}
 	}
 
 	private static void printInputData() {
