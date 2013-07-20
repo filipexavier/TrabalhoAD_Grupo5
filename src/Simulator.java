@@ -12,12 +12,10 @@ public abstract class Simulator {
 
 	public static List<ServerGroup> serverGroups;
 	public static Integer backgroudTraffic;
-	public static Integer bufferSize;
-	public static BottleNeck bottleNeckPolicy;
+	public static Integer maximumSegmentSize;
 	public static Router router;
-	public static final String fileName = "simulador.txt";
+	public static final String FILENAME = "simulador.txt";
 	
-	@SuppressWarnings("unused")
 	public static void main(String[] args) throws IOException {
 		
 		readInputFile();
@@ -29,8 +27,9 @@ public abstract class Simulator {
 		System.out.println("	================ LOG DADOS DO ARQUIVO =================");
 		System.out.println("	=======================================================\n");
 		System.out.println("		Tr‡fego de fundo: " + backgroudTraffic + " bps");
-		System.out.println("		Tamanho do buffer: " + bufferSize + " pacotes");
-		System.out.println("		Pol’tica de atendimento: " + bottleNeckPolicy);
+		System.out.println("		Tamanho do buffer: " + router.getBufferSize() + " pacotes");
+		System.out.println("		MSS: " + (maximumSegmentSize/8) + " bytes");
+		System.out.println("		Pol’tica de atendimento: " + router.getBottleNeckPolicy());
 		System.out.println("		Taxa de transmiss‹o do roteador: " + router.getRate() + " bps");
 		System.out.println("	   ---------------------------------------------");
 		for(ServerGroup group : serverGroups){
@@ -49,7 +48,7 @@ public abstract class Simulator {
 
 		BufferedReader reader = null;
 		try {
-			reader = new BufferedReader(new FileReader(fileName));
+			reader = new BufferedReader(new FileReader(FILENAME));
 		} catch (FileNotFoundException e) {
 			System.out.println("=============ERRO NA LEITURA DO ARQUIVO DE ENTRADA============");
 			e.printStackTrace();
@@ -95,14 +94,17 @@ public abstract class Simulator {
 		
 		//Ler tamanho do buffer
 		line = reader.readLine();
-		bufferSize = Integer.parseInt(line);
+		router.setBufferSize(Integer.parseInt(line));
 		
+		//Ler MSS
+		line = reader.readLine();
+		maximumSegmentSize = Integer.parseInt(line);
 		
 		//Ler pol’tica de gargalo
 		line = reader.readLine();
 		for(BottleNeck policy: BottleNeck.values()){
 			if(line.equals(policy.name()) ){
-				bottleNeckPolicy = policy;
+				router.setBottleNeckPolicy(policy);
 			}
 		}
 		

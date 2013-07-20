@@ -7,4 +7,5 @@ Atraso de propagação do grupo 2
 Número de servidores do grupo 2
 Tráfego de fundo
 Tamanho do buffer (pacotes)
+MSS - Tamanho máximo do segmento (bits)
 Política de gargalo ( FIFO | RED )
