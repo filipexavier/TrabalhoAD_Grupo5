@@ -34,6 +34,10 @@ public class Simulator {
 	public static Integer maximumSegmentSize;
 	public static Router router;
 	public static final String FILENAME = "simulador.txt";
+
+	public static void registerListener(EventType eventType, Listener listener) {
+		listeners.get(eventType).add(listener);
+	}
 	
 	public static void main(String[] args) throws IOException {
 		
@@ -51,7 +55,6 @@ public class Simulator {
 	
 		while(eventBuffer.size() > 0){
 			event = eventBuffer.remove(0);
-			
 			for(Listener listener: listeners.get(event.getType())){
 				listener.listen(event);
 			}

@@ -6,20 +6,18 @@ import controller.Simulator;
 public class Server implements Listener{
 
 	private Integer broadcastRate;
-	
 	private ServerGroup group;
-
 	private Receiver receiver;
 
 	public Server(Integer rate, ServerGroup group, Receiver receiver) {
 		this.broadcastRate = rate;
 		this.group = group;
 		this.setReceiver(receiver);
-		//Adiciona-se na lista de listeners para escutar ACKs
-		Simulator.listeners.get(EventType.ACK).add(this);
 		
-		//Adiciona-se na lista de listeners para escutar TIMEOUTs
-		Simulator.listeners.get(EventType.TIME_OUT).add(this);
+		Simulator.registerListener(EventType.SEND_PACKAGE, this);
+		Simulator.registerListener(EventType.PACKAGE_SENT, this);
+		Simulator.registerListener(EventType.TIME_OUT, this);
+		Simulator.registerListener(EventType.ACK, this);
 		
 		Simulator.eventBuffer.add(new Event(EventType.PACKAGE_SENT, group.getBroadcastDelay(), this));
 		System.out.println("Envia pacote em " + group.getBroadcastDelay());
