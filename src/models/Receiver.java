@@ -15,7 +15,8 @@ public class Receiver implements Listener {
 	public void listen(Event event) {
 		if( this.getServer() == (Server) event.getSender() ) {
 			System.out.println("Recebeu pacote tempo " + event.getTime());
-			Simulator.eventBuffer.add(new Event(EventType.ACK, event.getTime(), this));
+			
+			Simulator.shotEvent(EventType.ACK, event.getTime(), this, null);
 		}
 	}
 

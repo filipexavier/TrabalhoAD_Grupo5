@@ -1,13 +1,17 @@
 package models;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Router {
 
 	private Integer rate;
 	private BottleNeck bottleNeckPolicy;
 	private Integer bufferSize;
-	//private List<> buffer;
+	private List<Package> buffer;
 
 	public Router() {
+		buffer = new ArrayList<Package>();
 	}
 
 	public Router(int rate) {

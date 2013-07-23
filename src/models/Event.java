@@ -5,11 +5,13 @@ public class Event implements Comparable<Event>{
 	private EventType type;
 	private Integer time;
 	private Object sender;
+	private Object value;
 
-	public Event(EventType ack, Integer time, Object sender) {
+	public Event(EventType ack, Integer time, Object sender, Object value) {
 		this.type = ack;
 		this.time = time;
 		this.sender = sender;
+		this.value = value;
 	}
 
 	@Override
@@ -42,6 +44,16 @@ public class Event implements Comparable<Event>{
 		this.sender = sender;
 	}
 
+	public Object getValue() {
+		return value;
+	}
+
+	public void setValue(Object value) {
+		this.value = value;
+	}
 	
-	
+	@Override
+	public String toString() {
+		return "<Tipo: "+type+" Tempo: "+time+" Sender: "+sender+" Valor: "+value+">";
+	}	
 }

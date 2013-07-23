@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -37,6 +38,12 @@ public class Simulator {
 
 	public static void registerListener(EventType eventType, Listener listener) {
 		listeners.get(eventType).add(listener);
+	}
+	
+	public static void shotEvent(EventType eventType, Integer time, Object sender, Object value) {
+		Event event = new Event(eventType, time, sender, value);
+		eventBuffer.add(event);
+		System.out.println("O evento "+event+" foi enviado.");
 	}
 	
 	public static void main(String[] args) throws IOException {

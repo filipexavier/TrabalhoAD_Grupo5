@@ -1,8 +1,13 @@
 package models;
 
 public class Package {
-
-	public Package() {
+	Integer initAddress;
+	Integer endAddress;
+	
+	
+	public Package(Integer initAddress, Integer endAddress) {
+		this.initAddress = initAddress;
+		this.endAddress = endAddress;
 	}
 
 }
