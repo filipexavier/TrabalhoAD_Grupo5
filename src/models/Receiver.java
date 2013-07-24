@@ -7,6 +7,8 @@ public class Receiver implements Listener {
 
 	private Server server;
 	
+	//TODO: LISTA DE PACOTES RECEBIDOS
+	
 	public Receiver() {
 		Simulator.listeners.get(EventType.PACKAGE_SENT).add(this);
 	}
@@ -15,8 +17,8 @@ public class Receiver implements Listener {
 	public void listen(Event event) {
 		if( this.getServer() == (Server) event.getSender() ) {
 			System.out.println("Recebeu pacote tempo " + event.getTime());
-			
-			Simulator.shotEvent(EventType.ACK, event.getTime(), this, null);
+			//ACK enviado contem o pacote recebido
+			Simulator.shotEvent(EventType.SACK, event.getTime(), this, event.getValue());
 		}
 	}
 

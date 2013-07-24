@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,6 +45,19 @@ public class Simulator {
 		Event event = new Event(eventType, time, sender, value);
 		eventBuffer.add(event);
 		System.out.println("O evento "+event+" foi enviado.");
+	}
+	
+	/** Cancela(exclui) evento referente a este pacote */
+	public static void cancelEvent(EventType eventType, Object package1){
+		if(eventType == EventType.TIME_OUT){
+			Iterator<Event> it = eventBuffer.iterator();
+			while( it.hasNext()){
+				if(it.next().getValue() == package1){
+					it.remove();
+					break;
+				}
+			}
+		}
 	}
 	
 	public static void main(String[] args) throws IOException {

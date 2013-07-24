@@ -5,7 +5,8 @@ public class Event implements Comparable<Event>{
 	private EventType type;
 	private Integer time;
 	private Object sender;
-	private Object value;
+	private Object value; // pacote (TIMEOUT, ACK)
+	//TODO: Acho que tem que criar outro value, pra guardar as listas do SACK
 
 	public Event(EventType ack, Integer time, Object sender, Object value) {
 		this.type = ack;
