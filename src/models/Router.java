@@ -51,6 +51,7 @@ public class Router implements Listener {
 				buffer.add(event);
 			}
 		}else {
+			onService = true;
 			Simulator.shotEvent(EventType.DELIVER_PACKAGE, event.getTime(), this, event);
 		}
 	}

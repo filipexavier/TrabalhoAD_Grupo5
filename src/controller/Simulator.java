@@ -75,7 +75,7 @@ public class Simulator {
 		Integer time = 0;
 		while(eventBuffer.size() > 0){
 			event = eventBuffer.remove(0);
-			Thread.sleep(Math.abs(time - event.getTime()));
+//			Thread.sleep(Math.abs(time - event.getTime()));
 			time = event.getTime();
 			for(Listener listener: listeners.get(event.getType())){
 				listener.listen(event);

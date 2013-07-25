@@ -24,13 +24,13 @@ public class Receiver implements Listener {
 	public void listen(Event event) {
 		if( this.getServer() == (Server) event.getSender() ) {
 			Integer packge = (Integer)event.getValue();
-			if (nextAck == packge) {
+			if (nextAck.equals(packge)) {
 				nextAck += Simulator.maximumSegmentSize;
 				while(receivedPackages.contains(nextAck)) {
 					receivedPackages.remove(nextAck);
 					nextAck += Simulator.maximumSegmentSize;
 				}
-			} else {
+			} else if(packge > nextAck) {
 				receivedPackages.add(packge);
 			}
 			List<Object> value = new ArrayList<Object>();
