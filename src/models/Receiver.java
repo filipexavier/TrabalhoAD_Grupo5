@@ -9,22 +9,32 @@ import controller.Simulator;
 public class Receiver implements Listener {
 
 	private Server server;
-	
-	//TODO: LISTA DE PACOTES RECEBIDOS
 	private List<Integer> receivedPackages = null;
+	private Integer nextAck;
 	
 	public Receiver() {
-		Simulator.listeners.get(EventType.PACKAGE_SENT).add(this);
+		Simulator.listeners.get(EventType.PACKAGE_DELIVERED).add(this);
 		receivedPackages = new ArrayList<Integer>();
+		nextAck = 0;
 	}
 
 	@Override
 	public void listen(Event event) {
 		if( this.getServer() == (Server) event.getSender() ) {
-			System.out.println("Recebeu pacote tempo " + event.getTime());
-			receivedPackages.add((Integer)event.getValue());
-			//ACK enviado contem o pacote recebido
-			Simulator.shotEvent(EventType.SACK, event.getTime(), this, event.getValue());
+			Integer packge = (Integer)event.getValue();
+			if (nextAck == packge) {
+				nextAck += Simulator.maximumSegmentSize;
+				while(receivedPackages.contains(nextAck)) {
+					receivedPackages.remove(nextAck);
+					nextAck += Simulator.maximumSegmentSize;
+				}
+			} else {
+				receivedPackages.add(packge);
+			}
+			List<Object> value = new ArrayList<Object>();
+			value.add(nextAck);
+			value.add(receivedPackages);
+			Simulator.shotEvent(EventType.SACK, event.getTime(), this, value);
 		}
 	}
 
