@@ -1,6 +1,9 @@
 package models;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import models.interfaces.Listener;
 import controller.Simulator;
@@ -10,25 +13,29 @@ public class Server implements Listener{
 	private Integer broadcastRate;
 	private ServerGroup group;
 	private Receiver receiver;
-	private Integer cwnd, duplicatedAcks, lastAck, nextPackage, startedCountReturnTime, realReturnTime, numOfPackagesToSend;
+	private Integer cwnd, duplicatedAcks, nextAck, nextPackage, startedCountReturnTime, realReturnTime, numOfPackagesToSend;
 	double expectedReturnTime;
 	double deviationReturnTime;
 	private Boolean calcNewRTT;
+	
+	List<Integer> sendedPackages;
+	Set<Integer> receivedAckPackages;
 
 
 	public Server(Integer rate, ServerGroup group, Receiver receiver) {
 		this.broadcastRate = rate;
 		this.group = group;
 		this.setReceiver(receiver);
+		sendedPackages = new ArrayList<Integer>();
+		receivedAckPackages = new HashSet<Integer>();
 		
 		Simulator.registerListener(EventType.SEND_PACKAGE, this);
 		Simulator.registerListener(EventType.SENDING_PACKAGE, this);
 		Simulator.registerListener(EventType.TIME_OUT, this);
 		Simulator.registerListener(EventType.SACK, this);
 		
-		cwnd = Simulator.maximumSegmentSize;
 		duplicatedAcks = 0;
-		lastAck = 0;
+		nextAck = 0;
 		calcNewRTT = false;
 		startedCountReturnTime = 0;
 		realReturnTime = 0;
@@ -37,6 +44,10 @@ public class Server implements Listener{
 		
 		numOfPackagesToSend = 1;
 		nextPackage = 0;
+	}
+	
+	public void startServer() {
+		cwnd = Simulator.maximumSegmentSize;
 		Simulator.shotEvent(EventType.SEND_PACKAGE, 0, this, null);
 	}
 	
@@ -67,40 +78,43 @@ public class Server implements Listener{
 			Simulator.cancelEvent(EventType.TIME_OUT, this, nextPackage);
 			Simulator.shotEvent(EventType.SENDING_PACKAGE, time, this, nextPackage);
 			
+			sendedPackages.add(nextPackage);			
 			nextPackage += Simulator.maximumSegmentSize;
+			
+			numOfPackagesToSend--;
+			while(sendedPackages.contains(nextPackage)){
+				nextPackage += Simulator.maximumSegmentSize;
+			}
 		}
 	}
 		
 	private void listenSendingPackage(Event event) {
 		if (((Server)event.getSender()) == this) {
-			Double differenceBetweenRealAndExpectation = realReturnTime - expectedReturnTime;
-			deviationReturnTime += 0.25*(Math.abs(differenceBetweenRealAndExpectation) - deviationReturnTime);
-			expectedReturnTime += 0.125*differenceBetweenRealAndExpectation;
-			double timeOutTime = expectedReturnTime + 4*deviationReturnTime;
 			
-			if(numOfPackagesToSend == Math.floor(cwnd/Simulator.maximumSegmentSize)) {	
-				Simulator.shotEvent(EventType.TIME_OUT, (int) timeOutTime, this, event.getValue());
-				startedCountReturnTime = event.getTime(); //Esta levando em consideracao somente o primeiro pacote da janela.
+			double timeOutTime = getTimeOutTime(event);
+			Simulator.shotEvent(EventType.TIME_OUT, (int) timeOutTime, this, event.getValue());
+
+			if(numOfPackagesToSend == (Math.floor(cwnd/Simulator.maximumSegmentSize) - 1)) {	
+				startedCountReturnTime = event.getTime();
 				calcNewRTT = true;
 			}
 			
 			Simulator.shotEvent(EventType.PACKAGE_SENT, event.getTime() + group.getBroadcastDelay(), this, event.getValue());
-			numOfPackagesToSend--;
 			
 			if(numOfPackagesToSend > 0) {
 				Simulator.shotEvent(EventType.SEND_PACKAGE, event.getTime(), this, null);
 			}	
 		}
 	}
-	
-	private void listenTimeOut(Event event) {
-		if (((Server)event.getSender()) == this) {
-			threshold = cwnd/2;
-			cwnd = Simulator.maximumSegmentSize;
-			//TODO: CANCELAR TODOS OS SEND PACKAGE FUTUROS
-		}
+
+	private double getTimeOutTime(Event event) {
+		Double differenceBetweenRealAndExpectation = realReturnTime - expectedReturnTime;
+		deviationReturnTime += 0.25*(Math.abs(differenceBetweenRealAndExpectation) - deviationReturnTime);
+		expectedReturnTime += 0.125*differenceBetweenRealAndExpectation;
+		double timeOutTime = expectedReturnTime + 4*deviationReturnTime;
+		return timeOutTime + event.getTime();
 	}
-	
+		
 	private void listenSack(Event event) {
 		if (((Receiver)event.getSender()) == getReceiver()) {
 			List<Object> sack = (List<Object>) event.getValue();
@@ -113,28 +127,68 @@ public class Server implements Listener{
 				calcNewRTT = false;
 			}
 			
-			if (lastAck != ackValue) { //Se estiver esperando um proximo pacote, significa que o antigo esperado ja foi recebido
+			if (nextAck != ackValue) {				
 				
-				if(cwnd < threshold) { //se estiver em slow start
+				if(cwnd < threshold) {
 					this.cwnd += Simulator.maximumSegmentSize;
 				} else{
 					this.cwnd += Simulator.maximumSegmentSize/this.cwnd;
 				}
 				
 				duplicatedAcks = 0;
-				Simulator.cancelEvent(EventType.TIME_OUT, this, lastAck);
-				lastAck = ackValue;
-				//TODO - DESLOCAR JANELA
+				Simulator.cancelEvent(EventType.TIME_OUT, this, nextAck);
+				sendedPackages.remove(nextAck);
+
+				nextAck = ackValue;
+				
+				while(receivedAckPackages.contains(nextPackage)) {
+					sendedPackages.remove(nextPackage);
+					receivedAckPackages.remove(nextPackage);
+					nextPackage += Simulator.maximumSegmentSize;
+				}
+				nextPackage = nextAck;
+	
+				numOfPackagesToSend = getNumberOfPackagesToSend();
+				Simulator.shotEvent(EventType.SEND_PACKAGE, event.getTime(), this, null);
 			} else {
+				receivedAckPackages.addAll(packageSequences);
+				
 				duplicatedAcks++;
 				if(duplicatedAcks == 3) {
 					threshold = cwnd/2;
 					cwnd = threshold + 3*Simulator.maximumSegmentSize;
-					// Enquanto o ACK deste pacote retransmitido não chegar, cwnd é incrementada de 1 MSS a cada ACK recebido
-					// Após a chegada do ACK do pacote retransmitido (possivelmente após RTT), fazemos cwnd=threshold, e entramos em congestion avoidance
-					//DELETAR TIMEOUT - Envia pacote do ack recebido
+					
+					restartSend(nextAck, event.getTime());
 				}
 			}
+		}
+	}
+
+	private void restartSend(Integer nextPackage, Integer time) {
+		List<Integer> removedPackges = new ArrayList<Integer>();
+		for (Integer packge : sendedPackages) {
+			if (!receivedAckPackages.contains(sendedPackages)) {
+				removedPackges.add(packge);
+
+				Simulator.cancelEvent(EventType.TIME_OUT, this, packge);
+				Simulator.cancelEvent(EventType.SEND_PACKAGE, this, packge);
+			}
+		}
+		sendedPackages.removeAll(removedPackges);
+		this.nextPackage = nextPackage;
+		numOfPackagesToSend = getNumberOfPackagesToSend();
+		Simulator.shotEvent(EventType.SEND_PACKAGE, time, this, null);
+	}
+
+	private int getNumberOfPackagesToSend() {
+		return ((int) Math.floor(cwnd/Simulator.maximumSegmentSize)) - sendedPackages.size();
+	}
+	
+	private void listenTimeOut(Event event) {
+		if (((Server)event.getSender()) == this) {
+			threshold = cwnd/2;
+			cwnd = Simulator.maximumSegmentSize;
+			restartSend((Integer) event.getValue(), event.getTime());
 		}
 	}
 		

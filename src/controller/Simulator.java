@@ -49,14 +49,12 @@ public class Simulator {
 	
 	/** Cancela(exclui) evento referente a este pacote */
 	public static void cancelEvent(EventType eventType, Object sender, Object value){
-		if(eventType == EventType.TIME_OUT){
-			Iterator<Event> it = eventBuffer.iterator();
-			while( it.hasNext()){
-				Event event = it.next();
-				if(event.getValue().equals(value) && event.getSender().equals(sender)){
-					it.remove();
-					break;
-				}
+		Iterator<Event> it = eventBuffer.iterator();
+		while( it.hasNext()){
+			Event event = it.next();
+			if(event.getType().equals(eventType) && (event.getValue() == null || event.getValue().equals(value)) && event.getSender().equals(sender)){
+				it.remove();
+				break;
 			}
 		}
 	}
@@ -132,6 +130,7 @@ public class Simulator {
 		line = reader.readLine();
 		Integer nGroups = Integer.parseInt(line);
 		int i;
+		List<Server> servers = new ArrayList<Server>();
 		for(i=0;i<nGroups;i++){
 			//Ler atraso de propaga‹o do grupo i
 			line = reader.readLine();
@@ -147,6 +146,7 @@ public class Simulator {
 				Server server = new Server(broadcastRate, group, receiver);
 				group.getServers().add(server);
 				receiver.setServer(server);
+				servers.add(server);
 				
 			}
 			
@@ -174,6 +174,12 @@ public class Simulator {
 		
 		
 		reader.close();
+		for (Server server : servers) {
+			server.startServer();
+		}
 	}
 
+	public static void cancelAllEvent(EventType sendPackage, Server server) {
+		// TODO Auto-generated method stub		
+	}
 }
