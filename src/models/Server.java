@@ -1,5 +1,7 @@
 package models;
 
+import java.util.List;
+
 import models.interfaces.Listener;
 import controller.Simulator;
 
@@ -8,7 +10,7 @@ public class Server implements Listener{
 	private Integer broadcastRate;
 	private ServerGroup group;
 	private Receiver receiver;
-	private Integer cwnd, duplicatedAcks, lastAck, lastPackage, startedCountReturnTime, realReturnTime, numOfPackagesToSend;
+	private Integer cwnd, duplicatedAcks, lastAck, nextPackage, startedCountReturnTime, realReturnTime, numOfPackagesToSend;
 	double expectedReturnTime;
 	double deviationReturnTime;
 	private Boolean calcNewRTT;
@@ -26,7 +28,7 @@ public class Server implements Listener{
 		
 		cwnd = Simulator.maximumSegmentSize;
 		duplicatedAcks = 0;
-		lastAck = -1;
+		lastAck = 0;
 		calcNewRTT = false;
 		startedCountReturnTime = 0;
 		realReturnTime = 0;
@@ -34,7 +36,7 @@ public class Server implements Listener{
 		expectedReturnTime = (1000/getBroadcastRate()) + group.getBroadcastDelay(); //TODO: + tempo medio da fila + serviço medio do roteador
 		
 		numOfPackagesToSend = 1;
-		lastPackage = -1;
+		nextPackage = 0;
 		Simulator.shotEvent(EventType.SEND_PACKAGE, 0, this, null);
 	}
 	
@@ -62,10 +64,8 @@ public class Server implements Listener{
 		if (((Server)event.getSender()) == this) {
 			Integer time = event.getTime() + (1000/getBroadcastRate());//TODO: MUDAR PARA VARIAVEL ALEATORIA
 			
-			Package package1 = new Package(lastPackage + 1, lastPackage + Simulator.maximumSegmentSize);
-			lastPackage += Simulator.maximumSegmentSize;
-			
-			Simulator.shotEvent(EventType.SENDING_PACKAGE, time, this, package1);
+			Simulator.shotEvent(EventType.SENDING_PACKAGE, time, this, nextPackage);
+			nextPackage += Simulator.maximumSegmentSize;
 		}
 	}
 		
@@ -96,27 +96,31 @@ public class Server implements Listener{
 		if (((Server)event.getSender()) == this) {
 			threshold = cwnd/2;
 			cwnd = Simulator.maximumSegmentSize;
-			//TODO: ENTRA EM SLOW START
+			//TODO: CANCELAR TODOS OS SEND PACKAGE FUTUROS
 		}
 	}
 	
 	private void listenSack(Event event) {
 		if (((Receiver)event.getSender()) == getReceiver()) {
-			Integer ackValue = (Integer) event.getValue();
+			List<Object> sack = (List<Object>) event.getValue();
+			Integer ackValue = (Integer) sack.get(0);//TODO pegar o primeiro elemento da lista
+			List<Integer> packageSequences = (List<Integer>) sack.get(1);
 			
 			if (calcNewRTT) {
 				realReturnTime = event.getTime() - startedCountReturnTime;
 				calcNewRTT = false;
 			}
 			
-			if (lastAck != ackValue) {
-				if(cwnd < threshold){//TODO if slow start
+			if (lastAck != ackValue) {//Se estiver esperando um proximo pacote, significa que o antigo esperado ja foi recebido
+				if(cwnd < threshold){//se estiver em slow start
 					this.cwnd += Simulator.maximumSegmentSize;
 				} else{
 					this.cwnd += Simulator.maximumSegmentSize/this.cwnd;
 				}
 				duplicatedAcks = 0;
+				Simulator.cancelEvent(EventType.TIME_OUT, this, lastAck);
 				lastAck = ackValue;
+				
 			} else {
 				duplicatedAcks++;
 				if(duplicatedAcks == 3) {
@@ -125,7 +129,6 @@ public class Server implements Listener{
 					// Enquanto o ACK deste pacote retransmitido não chegar, cwnd é incrementada de 1 MSS a cada ACK recebido
 					// Após a chegada do ACK do pacote retransmitido (possivelmente após RTT), fazemos cwnd=threshold, e entramos em congestion avoidance
 					//DELETAR TIMEOUT - Envia pacote do ack recebido
-					Simulator.cancelEvent(event.getType(), event.getValue());
 				}
 			}
 		}

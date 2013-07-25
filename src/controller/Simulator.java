@@ -48,11 +48,12 @@ public class Simulator {
 	}
 	
 	/** Cancela(exclui) evento referente a este pacote */
-	public static void cancelEvent(EventType eventType, Object package1){
+	public static void cancelEvent(EventType eventType, Object sender, Object value){
 		if(eventType == EventType.TIME_OUT){
 			Iterator<Event> it = eventBuffer.iterator();
 			while( it.hasNext()){
-				if(it.next().getValue() == package1){
+				Event event = it.next();
+				if(event.getValue().equals(value) && event.getSender().equals(sender)){
 					it.remove();
 					break;
 				}
