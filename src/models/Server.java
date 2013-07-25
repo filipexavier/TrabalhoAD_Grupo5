@@ -62,9 +62,11 @@ public class Server implements Listener{
 	
 	private void listenSendPackage(Event event) {
 		if (((Server)event.getSender()) == this) {
-			Integer time = event.getTime() + (1000/getBroadcastRate());//TODO: MUDAR PARA VARIAVEL ALEATORIA
+			Integer time = event.getTime() + (1000/getBroadcastRate());
 			
+			Simulator.cancelEvent(EventType.TIME_OUT, this, nextPackage);
 			Simulator.shotEvent(EventType.SENDING_PACKAGE, time, this, nextPackage);
+			
 			nextPackage += Simulator.maximumSegmentSize;
 		}
 	}
@@ -76,8 +78,7 @@ public class Server implements Listener{
 			expectedReturnTime += 0.125*differenceBetweenRealAndExpectation;
 			double timeOutTime = expectedReturnTime + 4*deviationReturnTime;
 			
-			if(numOfPackagesToSend == cwnd/Simulator.maximumSegmentSize) { // TODO Arrumar outro jeito de saber se este eh o primeiro pacote	
-				//Coloca o pacote (event.getValue() ) no evento do time out
+			if(numOfPackagesToSend == Math.floor(cwnd/Simulator.maximumSegmentSize)) {	
 				Simulator.shotEvent(EventType.TIME_OUT, (int) timeOutTime, this, event.getValue());
 				startedCountReturnTime = event.getTime(); //Esta levando em consideracao somente o primeiro pacote da janela.
 				calcNewRTT = true;
@@ -103,7 +104,8 @@ public class Server implements Listener{
 	private void listenSack(Event event) {
 		if (((Receiver)event.getSender()) == getReceiver()) {
 			List<Object> sack = (List<Object>) event.getValue();
-			Integer ackValue = (Integer) sack.get(0);//TODO pegar o primeiro elemento da lista
+			
+			Integer ackValue = (Integer) sack.get(0);
 			List<Integer> packageSequences = (List<Integer>) sack.get(1);
 			
 			if (calcNewRTT) {
@@ -111,16 +113,18 @@ public class Server implements Listener{
 				calcNewRTT = false;
 			}
 			
-			if (lastAck != ackValue) {//Se estiver esperando um proximo pacote, significa que o antigo esperado ja foi recebido
-				if(cwnd < threshold){//se estiver em slow start
+			if (lastAck != ackValue) { //Se estiver esperando um proximo pacote, significa que o antigo esperado ja foi recebido
+				
+				if(cwnd < threshold) { //se estiver em slow start
 					this.cwnd += Simulator.maximumSegmentSize;
 				} else{
 					this.cwnd += Simulator.maximumSegmentSize/this.cwnd;
 				}
+				
 				duplicatedAcks = 0;
 				Simulator.cancelEvent(EventType.TIME_OUT, this, lastAck);
 				lastAck = ackValue;
-				
+				//TODO - DESLOCAR JANELA
 			} else {
 				duplicatedAcks++;
 				if(duplicatedAcks == 3) {
@@ -132,7 +136,6 @@ public class Server implements Listener{
 				}
 			}
 		}
-		//TODO - DESLOCAR JANELA
 	}
 		
 	public Integer getBroadcastRate() {
