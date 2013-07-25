@@ -120,7 +120,7 @@ public class Server implements Listener{
 			List<Object> sack = (List<Object>) event.getValue();
 			
 			Integer ackValue = (Integer) sack.get(0);
-			List<Integer> packageSequences = (List<Integer>) sack.get(1);
+			Set<Integer> packageSequences = (Set<Integer>) sack.get(1);
 			
 			if (calcNewRTT) {
 				realReturnTime = event.getTime() - startedCountReturnTime;

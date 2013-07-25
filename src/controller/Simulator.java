@@ -59,7 +59,7 @@ public class Simulator {
 		}
 	}
 	
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, InterruptedException {
 		
 		eventBuffer = new ArrayList<Event>();
 		listeners = new HashMap<EventType, Set<Listener>>();
@@ -72,9 +72,11 @@ public class Simulator {
 		printInputData();
 		
 		Event event = null;
-	
+		Integer time = 0;
 		while(eventBuffer.size() > 0){
 			event = eventBuffer.remove(0);
+			Thread.sleep(Math.abs(time - event.getTime()));
+			time = event.getTime();
 			for(Listener listener: listeners.get(event.getType())){
 				listener.listen(event);
 			}

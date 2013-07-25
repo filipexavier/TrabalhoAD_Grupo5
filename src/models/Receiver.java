@@ -1,7 +1,9 @@
 package models;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import models.interfaces.Listener;
 import controller.Simulator;
@@ -9,12 +11,12 @@ import controller.Simulator;
 public class Receiver implements Listener {
 
 	private Server server;
-	private List<Integer> receivedPackages = null;
+	private Set<Integer> receivedPackages = null;
 	private Integer nextAck;
 	
 	public Receiver() {
 		Simulator.listeners.get(EventType.PACKAGE_DELIVERED).add(this);
-		receivedPackages = new ArrayList<Integer>();
+		receivedPackages = new HashSet<Integer>();
 		nextAck = 0;
 	}
 
@@ -45,13 +47,4 @@ public class Receiver implements Listener {
 	public void setServer(Server server) {
 		this.server = server;
 	}
-
-	public List<Integer> getReceivedPackages() {
-		return receivedPackages;
-	}
-
-	public void setReceivedPackages(List<Integer> receivedPackages) {
-		this.receivedPackages = receivedPackages;
-	}
-
 }
