@@ -22,6 +22,7 @@ public class Server implements Listener{
 	List<Integer> sendedPackages;
 	Set<Integer> receivedAckPackages;
 
+	private ExponentialVariable serverServiceTime;
 
 	public Server(Integer rate, ServerGroup group, Receiver receiver) {
 		this.broadcastRate = rate;
@@ -45,6 +46,7 @@ public class Server implements Listener{
 		
 		numOfPackagesToSend = 1;
 		nextPackage = 0;
+		serverServiceTime = new ExponentialVariable(rate);
 	}
 	
 	public void startServer() {
@@ -74,7 +76,7 @@ public class Server implements Listener{
 	
 	private void listenSendPackage(Event event) {
 		if (((Server)event.getSender()) == this) {
-			Integer time = event.getTime() + (1000/getBroadcastRate());
+			Integer time = (int) (event.getTime() + serverServiceTime.getSample());
 			
 			Simulator.cancelEvent(EventType.TIME_OUT, this, nextPackage);
 			Simulator.shotEvent(EventType.SENDING_PACKAGE, time, this, nextPackage);
@@ -116,6 +118,7 @@ public class Server implements Listener{
 		return timeOutTime + event.getTime();
 	}
 		
+	@SuppressWarnings("unchecked")
 	private void listenSack(Event event) {
 		if (((Receiver)event.getSender()) == getReceiver()) {
 			List<Object> sack = (List<Object>) event.getValue();
