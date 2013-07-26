@@ -1,6 +1,7 @@
 package models;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -13,11 +14,11 @@ public class Server implements Listener{
 	private Integer broadcastRate;
 	private ServerGroup group;
 	private Receiver receiver;
-	private Integer cwnd, duplicatedAcks, nextAck, nextPackage, startedCountReturnTime, realReturnTime, numOfPackagesToSend;
+	private Integer cwnd, duplicatedAcks, nextAck, nextPackage, realReturnTime, numOfPackagesToSend;
 	
 	double expectedReturnTime;
 	double deviationReturnTime;
-	private Boolean calcNewRTT;
+	private HashMap<Integer, Integer> rttPerPackage;
 	
 	List<Integer> sendedPackages;
 	Set<Integer> receivedAckPackages;
@@ -30,6 +31,7 @@ public class Server implements Listener{
 		this.setReceiver(receiver);
 		sendedPackages = new ArrayList<Integer>();
 		receivedAckPackages = new HashSet<Integer>();
+		rttPerPackage = new HashMap<Integer, Integer>();
 		
 		Simulator.registerListener(EventType.SEND_PACKAGE, this);
 		Simulator.registerListener(EventType.SENDING_PACKAGE, this);
@@ -38,12 +40,9 @@ public class Server implements Listener{
 		
 		duplicatedAcks = 0;
 		nextAck = 0;
-		calcNewRTT = false;
-		startedCountReturnTime = 0;
-		realReturnTime = 0;
 		deviationReturnTime = 0;
 		expectedReturnTime = (1000/getBroadcastRate()) + group.getBroadcastDelay(); //TODO: + tempo medio da fila + serviço medio do roteador
-		
+		realReturnTime = 0;
 		numOfPackagesToSend = 1;
 		nextPackage = 0;
 		serverServiceTime = new ExponentialVariable(rate);
@@ -97,10 +96,7 @@ public class Server implements Listener{
 			double timeOutTime = getTimeOutTime(event);
 			Simulator.shotEvent(EventType.TIME_OUT, (int) timeOutTime, this, event.getValue());
 
-			if(numOfPackagesToSend == (Math.floor(cwnd/Simulator.maximumSegmentSize) - 1)) {	
-				startedCountReturnTime = event.getTime();
-				calcNewRTT = true;
-			}
+			rttPerPackage.put((Integer) event.getValue(), event.getTime());
 			
 			Simulator.shotEvent(EventType.PACKAGE_SENT, event.getTime() + group.getBroadcastDelay(), this, event.getValue());
 			
@@ -126,12 +122,12 @@ public class Server implements Listener{
 			Integer ackValue = (Integer) sack.get(0);
 			Set<Integer> packageSequences = (Set<Integer>) sack.get(1);
 			
-			if (calcNewRTT) {
-				realReturnTime = event.getTime() - startedCountReturnTime;
-				calcNewRTT = false;
-			}
 			
-			if (nextAck != ackValue) {				
+			if (nextAck != ackValue) {	
+				if (rttPerPackage.get(nextAck) != null) {
+					realReturnTime = event.getTime() - rttPerPackage.get(nextAck);
+					rttPerPackage.remove(nextAck);
+				}
 				
 				if(cwnd < threshold) {
 					this.cwnd += Simulator.maximumSegmentSize;
