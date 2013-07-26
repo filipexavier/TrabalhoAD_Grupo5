@@ -60,7 +60,10 @@ public class Simulator {
 	}
 	
 	public static void main(String[] args) throws IOException, InterruptedException {
-		
+		startSimulator();
+	}
+
+	private static void startSimulator() throws IOException {
 		eventBuffer = new ArrayList<Event>();
 		listeners = new HashMap<EventType, Set<Listener>>();
 		for(EventType type: EventType.values()){
@@ -88,11 +91,11 @@ public class Simulator {
 	private static void printInputData() {
 		System.out.println("	================ LOG DADOS DO ARQUIVO =================");
 		System.out.println("	=======================================================\n");
-		System.out.println("		Tráfego de fundo: " + backgroudTraffic + " bps");
+		System.out.println("		Tr√°fego de fundo: " + backgroudTraffic + " bps");
 		System.out.println("		Tamanho do buffer: " + router.getBufferSize() + " pacotes");
 		System.out.println("		MSS: " + (maximumSegmentSize/8) + " bytes");
-		System.out.println("		Política de atendimento: " + router.getBottleNeckPolicy());
-		System.out.println("		Taxa de transmissão do roteador: " + router.getRate() + " bps");
+		System.out.println("		Pol√≠tica de atendimento: " + router.getBottleNeckPolicy());
+		System.out.println("		Taxa de transmiss√£o do roteador: " + router.getRate() + " bps");
 		System.out.println("	   ---------------------------------------------");
 		for(ServerGroup group : serverGroups){
 			System.out.println("		Servidores do grupo " + (serverGroups.indexOf(group)+1) +  ": " );
@@ -124,7 +127,7 @@ public class Simulator {
 		line = reader.readLine();
 		router = new Router( Integer.parseInt(line) );
 		
-		//Ler taxa de transmissão dos servidores(bps)
+		//Ler taxa de transmiss√£o dos servidores(bps)
 		line = reader.readLine();
 		Integer broadcastRate = Integer.parseInt(line);
 		
@@ -134,14 +137,14 @@ public class Simulator {
 		int i;
 		List<Server> servers = new ArrayList<Server>();
 		for(i=0;i<nGroups;i++){
-			//Ler atraso de propagação do grupo i
+			//Ler atraso de propaga√ß√£o do grupo i
 			line = reader.readLine();
 			ServerGroup group = new ServerGroup( Integer.parseInt(line) );
 			
-			//Ler número de servidores no grupo i
+			//Ler n√∫mero de servidores no grupo i
 			line = reader.readLine();
 			int nServers = Integer.parseInt(line);
-			//Criar servidores (seta sua taxa de transmissao e estabelece relação com o grupo)
+			//Criar servidores (seta sua taxa de transmissao e estabelece rela√ß√£o com o grupo)
 			int j;
 			for(j=0; j<nServers; j++){
 				Receiver receiver = new Receiver();
@@ -154,7 +157,7 @@ public class Simulator {
 			
 		}
 
-		//Ler tráfego de fundo
+		//Ler tr√°fego de fundo
 		line = reader.readLine();
 		backgroudTraffic = Integer.parseInt(line);
 		
@@ -166,7 +169,7 @@ public class Simulator {
 		line = reader.readLine();
 		maximumSegmentSize = Integer.parseInt(line);
 		
-		//Ler política de gargalo
+		//Ler pol√≠tica de gargalo
 		line = reader.readLine();
 		for(BottleNeck policy: BottleNeck.values()){
 			if(line.equals(policy.name()) ){
