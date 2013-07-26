@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import view.SimulatorView;
+
 import models.BottleNeck;
 import models.Event;
 import models.EventType;
@@ -63,29 +65,45 @@ public class Simulator {
 		startSimulator();
 	}
 
-	private static void startSimulator() throws IOException {
+	public static void startSimulator() throws IOException, InterruptedException {
 		eventBuffer = new ArrayList<Event>();
 		listeners = new HashMap<EventType, Set<Listener>>();
 		for(EventType type: EventType.values()){
 			listeners.put( type, new HashSet<Listener>() );
 		}
-		readInputFile();
-		Collections.sort(eventBuffer);
-		
+		readInputFile();		
 		printInputData();
-		
+
 		Event event = null;
 		Integer time = 0;
 		while(eventBuffer.size() > 0){
 			event = eventBuffer.remove(0);
-//			Thread.sleep(Math.abs(time - event.getTime()));
+			Thread.sleep(Math.abs(time - event.getTime()));
 			time = event.getTime();
 			for(Listener listener: listeners.get(event.getType())){
 				listener.listen(event);
 			}
 			
-			Collections.sort(eventBuffer);
+			sortEventBuffer(event.getTime());
 		}
+	}
+
+	private static void sortEventBuffer(Integer time) {
+		Collections.sort(eventBuffer);
+		Integer  value = 0;
+		Integer numOfServers = 0;
+		
+		for (ServerGroup serverGroup : serverGroups) {
+			for (Server server : serverGroup.getServers()) {
+				value += server.getCwnd();
+				numOfServers++;
+			}
+		}
+		
+		value /= numOfServers;
+		value /= Simulator.maximumSegmentSize;
+				
+		SimulatorView.getInstance().updateChart(value, time);
 	}
 
 	private static void printInputData() {
@@ -140,7 +158,7 @@ public class Simulator {
 			//Ler atraso de propagação do grupo i
 			line = reader.readLine();
 			ServerGroup group = new ServerGroup( Integer.parseInt(line) );
-			
+			serverGroups.add(group);
 			//Ler número de servidores no grupo i
 			line = reader.readLine();
 			int nServers = Integer.parseInt(line);
@@ -182,9 +200,5 @@ public class Simulator {
 		for (Server server : servers) {
 			server.startServer();
 		}
-	}
-
-	public static void cancelAllEvent(EventType sendPackage, Server server) {
-		// TODO Auto-generated method stub		
 	}
 }

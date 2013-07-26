@@ -1,11 +1,11 @@
 package models;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.LinkedList;
+import java.util.List;
 
 
 public class ServerGroup {
 
-	private Set<Server> servers;
+	private List<Server> servers;
 	
 	private Integer broadcastDelay;
 
@@ -14,14 +14,14 @@ public class ServerGroup {
 	
 	public ServerGroup(Integer broadcasDelay) {
 		this.broadcastDelay = broadcasDelay;
-		servers = new HashSet<Server>();
+		servers = new LinkedList<Server>();
 	}
 
-	public Set<Server> getServers() {
+	public List<Server> getServers() {
 		return servers;
 	}
 
-	public void setServers(Set<Server> servers) {
+	public void setServers(List<Server> servers) {
 		this.servers = servers;
 	}
 

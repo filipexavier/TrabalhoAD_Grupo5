@@ -14,6 +14,7 @@ public class Server implements Listener{
 	private ServerGroup group;
 	private Receiver receiver;
 	private Integer cwnd, duplicatedAcks, nextAck, nextPackage, startedCountReturnTime, realReturnTime, numOfPackagesToSend;
+	
 	double expectedReturnTime;
 	double deviationReturnTime;
 	private Boolean calcNewRTT;
@@ -216,5 +217,14 @@ public class Server implements Listener{
 	public void setReceiver(Receiver receiver) {
 		this.receiver = receiver;
 	}
+	
+	public Integer getCwnd() {
+		return cwnd;
+	}
+
+	public void setCwnd(Integer cwnd) {
+		this.cwnd = cwnd;
+	}
+
 
 }
