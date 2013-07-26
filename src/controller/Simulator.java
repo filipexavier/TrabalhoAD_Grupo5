@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import models.BackgroundTraffic;
 import models.BottleNeck;
 import models.Event;
 import models.EventType;
@@ -30,7 +31,7 @@ public class Simulator {
 	public static List<ServerGroup> serverGroups;
 	public static Map< EventType, Set<Listener> > listeners;
 	public static List<Event> eventBuffer;
-	public static Integer backgroudTraffic;
+	public static BackgroundTraffic backgroundTraffic;
 	public static Integer maximumSegmentSize;
 	public static Router router;
 	public static final String FILENAME = "simulador.txt";
@@ -75,7 +76,6 @@ public class Simulator {
 		printInputData();
 
 		Event event = null;
-		Integer time = 0;
 		while(eventBuffer.size() > 0){
 			event = eventBuffer.remove(0);
 			Thread.sleep(Math.abs(time - event.getTime()));
@@ -96,7 +96,7 @@ public class Simulator {
 		
 		for (ServerGroup serverGroup : serverGroups) {
 			for (Server server : serverGroup.getServers()) {
-				value += server.getCwnd();
+				value += (int) Math.floor(server.getCwnd());
 				numOfServers++;
 			}
 		}
@@ -110,7 +110,7 @@ public class Simulator {
 	private static void printInputData() {
 		System.out.println("	================ LOG DADOS DO ARQUIVO =================");
 		System.out.println("	=======================================================\n");
-		System.out.println("		Tráfego de fundo: " + backgroudTraffic + " bps");
+		System.out.println("		Tráfego de fundo: " + backgroundTraffic + " bps");
 		System.out.println("		Tamanho do buffer: " + router.getBufferSize() + " pacotes");
 		System.out.println("		MSS: " + (maximumSegmentSize/8) + " bytes");
 		System.out.println("		Política de atendimento: " + router.getBottleNeckPolicy());
@@ -178,7 +178,7 @@ public class Simulator {
 
 		//Ler tráfego de fundo
 		line = reader.readLine();
-		backgroudTraffic = Integer.parseInt(line);
+		backgroundTraffic = new BackgroundTraffic(Float.parseFloat(line));
 		
 		//Ler tamanho do buffer
 		line = reader.readLine();
@@ -202,5 +202,6 @@ public class Simulator {
 		for (Server server : servers) {
 			server.startServer();
 		}
+		backgroundTraffic.startBackgroundTraffic();
 	}
 }
