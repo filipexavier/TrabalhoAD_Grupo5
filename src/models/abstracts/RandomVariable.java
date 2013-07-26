@@ -11,9 +11,9 @@ public abstract class RandomVariable {
 		randomGenerator = new Random(System.currentTimeMillis());
 	}
 	
-	public float getSample() {
-		return(randomGenerator.nextFloat());
+	public Double getSample() {
+		return(randomGenerator.nextDouble());
 	}
 	
-	protected abstract float generateSample(float randomNumber);
+	protected abstract Double generateSample(float randomNumber);
 }

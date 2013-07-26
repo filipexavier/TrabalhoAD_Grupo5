@@ -4,16 +4,16 @@ import models.abstracts.RandomVariable;
 
 public class ExponentialVariable extends RandomVariable {
 
-	private float lambda;
+	private double lambda;
 	
-	public ExponentialVariable(float lambda) {
+	public ExponentialVariable(double lambda) {
 		super();
 		this.lambda = lambda; 
 	}
 	
 	@Override
-	protected float generateSample(float randomNumber) {
-		return (float) (Math.log(1 - randomNumber) / lambda);
+	protected Double generateSample(float randomNumber) {
+		return (Math.log(1 - randomNumber) / lambda);
 	}
 
 }

@@ -37,7 +37,6 @@ public class SimulatorView {
 	 */
 	public static void main(String[] args) throws IOException, InterruptedException {
 		SimulatorView window = SimulatorView.getInstance();
-		window.frame.setVisible(true);
 		Simulator.startSimulator();
 	}
 
@@ -46,6 +45,7 @@ public class SimulatorView {
 	 */
 	private SimulatorView() {
 		initialize();
+		frame.setVisible(true);
 	}
 
 	/**

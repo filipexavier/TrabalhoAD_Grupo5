@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 import models.interfaces.Listener;
@@ -12,10 +13,10 @@ import controller.Simulator;
 public class Server implements Listener{
 	public static Integer threshold = 65535;
 	private Integer broadcastRate;
+	private ExponentialVariable rate;
 	private ServerGroup group;
 	private Receiver receiver;
-	private Integer cwnd, duplicatedAcks, nextAck, nextPackage, realReturnTime, numOfPackagesToSend;
-	
+	private Integer cwnd, duplicatedAcks, nextAck, nextPackage, realReturnTime, numOfPackagesToSend; 
 	double expectedReturnTime;
 	double deviationReturnTime;
 	private HashMap<Integer, Integer> rttPerPackage;
@@ -40,7 +41,7 @@ public class Server implements Listener{
 		duplicatedAcks = 0;
 		nextAck = 0;
 		deviationReturnTime = 0;
-		expectedReturnTime = (1000/getBroadcastRate()) + group.getBroadcastDelay(); //TODO: + tempo medio da fila + serviço medio do roteador
+		expectedReturnTime = 2*group.getBroadcastDelay();
 		realReturnTime = 0;
 		numOfPackagesToSend = 1;
 		nextPackage = 0;
@@ -48,6 +49,7 @@ public class Server implements Listener{
 	
 	public void startServer() {
 		cwnd = Simulator.maximumSegmentSize;
+		this.rate = new ExponentialVariable(broadcastRate/(1000.0*Simulator.maximumSegmentSize));
 		Simulator.shotEvent(EventType.SEND_PACKAGE, 0, this, null);
 	}
 	
@@ -73,7 +75,8 @@ public class Server implements Listener{
 	
 	private void listenSendPackage(Event event) {
 		if (((Server)event.getSender()) == this) {
-			Integer time = event.getTime() + (1000/getBroadcastRate());
+			Random rand = new Random(event.getTime());
+			Integer time = (int) (event.getTime() + rate.generateSample(rand.nextInt()));
 			
 			Simulator.cancelEvent(EventType.TIME_OUT, this, nextPackage);
 			Simulator.shotEvent(EventType.SENDING_PACKAGE, time, this, nextPackage);
@@ -152,6 +155,7 @@ public class Server implements Listener{
 				
 				duplicatedAcks++;
 				if(duplicatedAcks == 3) {
+					duplicatedAcks = 0;
 					threshold = cwnd/2;
 					cwnd = threshold + 3*Simulator.maximumSegmentSize;
 					
