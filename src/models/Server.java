@@ -75,8 +75,7 @@ public class Server implements Listener{
 	
 	private void listenSendPackage(Event event) {
 		if (((Server)event.getSender()) == this) {
-			Random rand = new Random(event.getTime());
-			Integer time = (int) (event.getTime() + rate.generateSample(rand.nextInt()));
+			Integer time = (int) (event.getTime() + rate.getSample());
 			
 			Simulator.cancelEvent(EventType.TIME_OUT, this, nextPackage);
 			Simulator.shotEvent(EventType.SENDING_PACKAGE, time, this, nextPackage);
