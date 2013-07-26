@@ -16,6 +16,14 @@ public class Router implements Listener {
 	private Boolean onService;
 	private List<Event> buffer;
 	private ExponentialVariable sendVariable;
+	
+	// RED values
+	private Float wq = 0.002f;
+	private Integer minth = 5;
+	private Integer maxth = 15;
+	private Float maxp = 0.02f;
+	private Float avg = 0f;
+	private Integer count = 0; // representa o número de pacotes não descartados desde o último descarte
 
 
 	public Router(int rate) {
@@ -49,16 +57,55 @@ public class Router implements Listener {
 	}
 
 	private void listenPackgeSent(Event event) {
-		if (onService) {
+		if (BottleNeck.FIFO.equals(bottleNeckPolicy)) {
+			
 			if (buffer.size() < bufferSize) {
-				buffer.add(event);
+				queuePackage(event);
 			}
+			
+		} else if (BottleNeck.RED.equals(bottleNeckPolicy)) {
+			
+			if (onService)
+				avg = (1 - wq)*avg + wq*buffer.size(); 
+			else
+				// FIXME: calcular o m, que esta sendo usado como 10
+				avg = (float) (Math.pow((1 - wq), 10) * avg);
+			
+			if (avg < minth) {
+				queuePackage(event);
+			} else if (avg > maxth) {
+				// pacote eh perdido
+				count = 0;
+			} else {
+				Float pb = maxp*(avg - minth) / (maxth - minth);
+				Float pa = pb / (1 - count*pb);
+				
+				// FIXME: aceito com que prob?
+				if (pa > 0.5f) {
+					queuePackage(event);
+					count++;
+				} else {
+					// pacote eh perdido
+					count = 0;
+				}
+			}
+			
+		} else {
+			
+			queuePackage(event);
+			
+		}
+	}
+	
+	private void queuePackage(Event event) {
+		if (onService) {
+			buffer.add(event);
 		}else {
 			onService = true;
 			Simulator.shotEvent(EventType.DELIVER_PACKAGE, event.getTime(), this, event);
 		}
 	}
-	
+
 	private void listenDeliverPackage(Event event) {
 		Integer time = (int) (event.getTime() + sendVariable.getSample());
 		Event serverEvent = (Event) event.getValue();
@@ -72,7 +119,7 @@ public class Router implements Listener {
 			Simulator.shotEvent(EventType.DELIVER_PACKAGE, event.getTime(), this, buffer.remove(0));
 		}
 	}
-
+	
 	public Integer getRate() {
 		return rate;
 	}
