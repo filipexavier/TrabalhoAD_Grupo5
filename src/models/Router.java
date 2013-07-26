@@ -15,6 +15,7 @@ public class Router implements Listener {
 	
 	private Boolean onService;
 	private List<Event> buffer;
+	private ExponentialVariable sendVariable;
 
 
 	public Router(int rate) {
@@ -26,6 +27,8 @@ public class Router implements Listener {
 		Simulator.registerListener(EventType.PACKAGE_DELIVERED, this);
 		
 		this.rate = rate;
+		
+		sendVariable = new ExponentialVariable(rate);
 	}
 	
 	@Override
@@ -57,7 +60,7 @@ public class Router implements Listener {
 	}
 	
 	private void listenDeliverPackage(Event event) {
-		Integer time = event.getTime() + (1000/getRate());
+		Integer time = (int) (event.getTime() + sendVariable.getSample());
 		Event serverEvent = (Event) event.getValue();
 		Simulator.shotEvent(EventType.PACKAGE_DELIVERED, time, serverEvent.getSender(), serverEvent.getValue());
 	}
