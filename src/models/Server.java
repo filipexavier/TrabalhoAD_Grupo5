@@ -115,6 +115,7 @@ public class Server implements Listener{
 		return timeOutTime + event.getTime();
 	}
 		
+	@SuppressWarnings("unchecked")
 	private void listenSack(Event event) {
 		if (((Receiver)event.getSender()) == getReceiver()) {
 			List<Object> sack = (List<Object>) event.getValue();

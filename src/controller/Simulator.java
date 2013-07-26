@@ -197,6 +197,7 @@ public class Simulator {
 		
 		
 		reader.close();
+		router.startRouter();
 		for (Server server : servers) {
 			server.startServer();
 		}
