@@ -35,13 +35,17 @@ public class Simulator {
 	public static Integer maximumSegmentSize;
 	public static Router router;
 	public static final String FILENAME = "simulador.txt";
-	public static Integer time = 0;
+	
+	public static Float time = (float) 0;
+	public static Integer serverBroadcast   = 0;
+	public static Integer routerBroadcast   = 0;
+	public static Integer receiverBroadcast = 0;
 
 	public static void registerListener(EventType eventType, Listener listener) {
 		listeners.get(eventType).add(listener);
 	}
 	
-	public static void shotEvent(EventType eventType, Integer time, Object sender, Object value) {
+	public static void shotEvent(EventType eventType, Float time, Object sender, Object value) {
 		Event event = new Event(eventType, time, sender, value);
 		eventBuffer.add(event);
 		System.out.println("O evento "+event+" foi enviado.");
@@ -78,19 +82,44 @@ public class Simulator {
 		Event event = null;
 		while(eventBuffer.size() > 0){
 			event = eventBuffer.remove(0);
-			Thread.sleep(Math.abs(time - event.getTime()));
+//			Thread.sleep((long) Math.abs(time - event.getTime()));
 			time = event.getTime();
 			for(Listener listener: listeners.get(event.getType())){
 				listener.listen(event);
 			}
 			time = event.getTime();
 			System.out.println(time);
+			
+			switch (event.getType()) {
+			case SENDING_PACKAGE:
+				serverBroadcast++;
+				break;
+			case DELIVER_PACKAGE:
+				routerBroadcast++;
+				break;
+			case SACK:
+				receiverBroadcast++;
+				break;
+			default:
+				break;
+			}
+			
+			
 			sortEventBuffer(time);
 		}
 	}
 
-	private static void sortEventBuffer(Integer time) {
+	private static void sortEventBuffer(Float time) {
 		Collections.sort(eventBuffer);
+		updateChart(time);
+		if (time > 0) {
+			SimulatorView.getInstance().getServerBroadcast().setText(new Float(serverBroadcast*1000/time).toString());
+			SimulatorView.getInstance().getRouteBroadcast().setText(new Float(routerBroadcast*1000/time).toString());
+			SimulatorView.getInstance().getReceiverBroadcast().setText(new Float(receiverBroadcast*1000/time).toString());
+		}
+	}
+
+	private static void updateChart(Float time) {
 		Integer  value = 0;
 		Integer numOfServers = 0;
 		
@@ -100,11 +129,12 @@ public class Simulator {
 				numOfServers++;
 			}
 		}
-		
-		value /= numOfServers;
-		value /= Simulator.maximumSegmentSize;
-				
-		SimulatorView.getInstance().updateChart(value, time);
+		if (numOfServers > 0) {
+			value /= numOfServers;
+			value /= Simulator.maximumSegmentSize;
+					
+			SimulatorView.getInstance().updateChart(value, time);	
+		}
 	}
 
 	private static void printInputData() {

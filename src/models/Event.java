@@ -3,12 +3,12 @@ package models;
 public class Event implements Comparable<Event>{
 
 	private EventType type;
-	private Integer time;
+	private Float time;
 	private Object sender;
 	private Object value; // pacote (TIMEOUT, ACK)
 	//TODO: Acho que tem que criar outro value, pra guardar as listas do SACK
 
-	public Event(EventType ack, Integer time, Object sender, Object value) {
+	public Event(EventType ack, Float time, Object sender, Object value) {
 		this.type = ack;
 		this.time = time;
 		this.sender = sender;
@@ -29,11 +29,11 @@ public class Event implements Comparable<Event>{
 	}
 	
 	
-	public Integer getTime() {
+	public Float getTime() {
 		return time;
 	}
 	
-	public void setTime(Integer time) {
+	public void setTime(Float time) {
 		this.time = time;
 	}
 

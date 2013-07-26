@@ -25,7 +25,7 @@ public class Router implements Listener {
 	private Float avg = 0f;
 	private Integer count = 0; // representa o n�mero de pacotes n�o descartados desde o �ltimo descarte
 	private Random rand;
-	private Integer lastBusyPeriodTime =  0;
+	private Float lastBusyPeriodTime =  (float) 0.0;
 
 	public Router(int rate) {
 		buffer = new ArrayList<Event>();
@@ -60,17 +60,6 @@ public class Router implements Listener {
 			break;
 		}
 	}
-
-//	private void listenPackgeSent(Event event) {
-//		if (onService) {
-//			if (buffer.size() < bufferSize) {
-//				buffer.add(event);
-//			}
-//		}else {
-//			onService = true;
-//			Simulator.shotEvent(EventType.DELIVER_PACKAGE, event.getTime(), this, event);
-//		}
-//	}
 	
 	private void listenPackgeSent(Event event) {
 		if (BottleNeck.FIFO.equals(bottleNeckPolicy)) {
@@ -122,7 +111,7 @@ public class Router implements Listener {
 	}
 
 	private void listenDeliverPackage(Event event) {
-		Integer time = (int) (event.getTime() + rate/(1000.0*Simulator.maximumSegmentSize));
+		Float time = (float) (event.getTime() + (1000.0*Simulator.maximumSegmentSize)/rate);
 		Event serverEvent = (Event) event.getValue();
 		Simulator.shotEvent(EventType.PACKAGE_DELIVERED, time, serverEvent.getSender(), serverEvent.getValue());
 	}
