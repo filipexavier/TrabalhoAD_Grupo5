@@ -25,6 +25,7 @@ public class Router implements Listener {
 	private Float avg = 0f;
 	private Integer count = 0; // representa o número de pacotes não descartados desde o último descarte
 	private Random rand;
+	private Integer lastBusyPeriodTime =  0;
 
 	public Router(int rate) {
 		buffer = new ArrayList<Event>();
@@ -83,8 +84,7 @@ public class Router implements Listener {
 			if (onService)
 				avg = (1 - wq)*avg + wq*buffer.size(); 
 			else
-				// FIXME: calcular o m, que esta sendo usado como 10
-				avg = (float) (Math.pow((1 - wq), 10) * avg);
+				avg = (float) (Math.pow((1 - wq), event.getTime() - lastBusyPeriodTime) * avg);
 			
 			if (avg < minth) {
 				queuePackage(event);
@@ -130,6 +130,7 @@ public class Router implements Listener {
 	private void listenPackageDelivered(Event event) {
 		if (buffer.size() == 0) {
 			onService = false;
+			lastBusyPeriodTime = event.getTime();
 		} else {
 			Simulator.shotEvent(EventType.DELIVER_PACKAGE, event.getTime(), this, buffer.remove(0));
 		}
