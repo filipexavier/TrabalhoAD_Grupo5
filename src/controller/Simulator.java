@@ -4,9 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.sql.Time;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,9 +12,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
-
-import view.SimulatorView;
 
 import models.BottleNeck;
 import models.Event;
@@ -26,6 +21,7 @@ import models.Router;
 import models.Server;
 import models.ServerGroup;
 import models.interfaces.Listener;
+import view.SimulatorView;
 
 
 
@@ -38,6 +34,7 @@ public class Simulator {
 	public static Integer maximumSegmentSize;
 	public static Router router;
 	public static final String FILENAME = "simulador.txt";
+	public static Integer time = 0;
 
 	public static void registerListener(EventType eventType, Listener listener) {
 		listeners.get(eventType).add(listener);
@@ -47,6 +44,9 @@ public class Simulator {
 		Event event = new Event(eventType, time, sender, value);
 		eventBuffer.add(event);
 		System.out.println("O evento "+event+" foi enviado.");
+		if (time > event.getTime()) {
+			throw new RuntimeException("Evento anterior adicionou um evento no passado");
+		}
 	}
 	
 	/** Cancela(exclui) evento referente a este pacote */
@@ -83,8 +83,9 @@ public class Simulator {
 			for(Listener listener: listeners.get(event.getType())){
 				listener.listen(event);
 			}
-			
-			sortEventBuffer(event.getTime());
+			time = event.getTime();
+			System.out.println(time);
+			sortEventBuffer(time);
 		}
 	}
 

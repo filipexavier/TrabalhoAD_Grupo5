@@ -108,11 +108,11 @@ public class Server implements Listener{
 	}
 
 	private double getTimeOutTime(Event event) {
-		Double differenceBetweenRealAndExpectation = realReturnTime - expectedReturnTime;
-		deviationReturnTime += 0.25*(Math.abs(differenceBetweenRealAndExpectation) - deviationReturnTime);
-		expectedReturnTime += 0.125*differenceBetweenRealAndExpectation;
-		double timeOutTime = expectedReturnTime + 4*deviationReturnTime;
-		return timeOutTime + event.getTime();
+//		Double differenceBetweenRealAndExpectation = realReturnTime - expectedReturnTime;
+//		deviationReturnTime += 0.25*(Math.abs(differenceBetweenRealAndExpectation) - deviationReturnTime);
+//		expectedReturnTime += 0.125*differenceBetweenRealAndExpectation;
+//		double timeOutTime = expectedReturnTime + 4*deviationReturnTime;
+		return expectedReturnTime + event.getTime();
 	}
 		
 	@SuppressWarnings("unchecked")
