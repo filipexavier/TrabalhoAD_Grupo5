@@ -1,14 +1,13 @@
 package models.abstracts;
 
-import java.util.Random;
+import models.HighQualityRandom;
 
 public abstract class RandomVariable {
 	
-	protected Random randomGenerator;
+	protected HighQualityRandom randomGenerator;
 	
 	public RandomVariable() {
-		// FIXME: Analisar a seed sendo passada
-		randomGenerator = new Random(System.currentTimeMillis());
+		randomGenerator = new HighQualityRandom();
 	}
 	
 	public Double getSample() {
