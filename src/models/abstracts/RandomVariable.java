@@ -12,8 +12,8 @@ public abstract class RandomVariable {
 	}
 	
 	public Double getSample() {
-		return(randomGenerator.nextDouble());
+		return generateSample(randomGenerator.nextDouble());
 	}
 	
-	protected abstract Double generateSample(float randomNumber);
+	protected abstract Double generateSample(Double randomNumber);
 }

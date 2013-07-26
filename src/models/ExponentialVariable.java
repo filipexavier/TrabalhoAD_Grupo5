@@ -12,8 +12,8 @@ public class ExponentialVariable extends RandomVariable {
 	}
 	
 	@Override
-	protected Double generateSample(float randomNumber) {
-		return (Math.log(1 - randomNumber) / lambda);
+	protected Double generateSample(Double randomNumber) {
+		return -(Math.log(1 - randomNumber) / lambda);
 	}
 
 }
