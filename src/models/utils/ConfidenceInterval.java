@@ -49,7 +49,7 @@ public class ConfidenceInterval {
 			double lowerLimit = avarege - z * dp / Math.sqrt(data.size());
 			double uperLimit = avarege + z * dp / Math.sqrt(data.size());
 
-			return "(" + lowerLimit + "," + uperLimit + ")";
+			return "(" + lowerLimit + ", " + uperLimit + ") largura: "+getPrecision(data);
 		}
 
 		return null;

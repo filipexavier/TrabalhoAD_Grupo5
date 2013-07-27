@@ -58,9 +58,10 @@ public class SimulatorView {
 	private JTextField routeBroadcast;
 	private JTextField receiverBroadcast;
 	private JTextField simulationTimeTextField;
-
-
-	private JTextField textField_1;
+	private JTextField serverCI;
+	private JTextField routerCI;
+	private JTextField receiverCI;
+	private JTextField numOfRuns;
 	
 	public static SimulatorView getInstance() {
 		if (instance == null) {
@@ -117,28 +118,34 @@ public class SimulatorView {
 		
 		JPanel panel_1 = new JPanel();
 		
+		JPanel panel_2 = new JPanel();
+		
 		GroupLayout groupLayout = new GroupLayout(frame.getContentPane());
 		groupLayout.setHorizontalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(groupLayout.createSequentialGroup()
 					.addContainerGap()
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addGroup(Alignment.TRAILING, groupLayout.createSequentialGroup()
-							.addComponent(chartPanel, GroupLayout.DEFAULT_SIZE, 1212, Short.MAX_VALUE)
-							.addContainerGap())
+						.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
+							.addGroup(groupLayout.createSequentialGroup()
+								.addComponent(chartPanel, GroupLayout.DEFAULT_SIZE, 1212, Short.MAX_VALUE)
+								.addContainerGap())
+							.addGroup(groupLayout.createSequentialGroup()
+								.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
+									.addComponent(panel_2, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 1212, Short.MAX_VALUE)
+									.addComponent(panel, GroupLayout.DEFAULT_SIZE, 1212, Short.MAX_VALUE))
+								.addContainerGap()))
 						.addGroup(Alignment.TRAILING, groupLayout.createSequentialGroup()
 							.addComponent(lblTaxasEmMbps)
-							.addGap(422))
-						.addGroup(Alignment.TRAILING, groupLayout.createSequentialGroup()
-							.addComponent(panel, GroupLayout.DEFAULT_SIZE, 1212, Short.MAX_VALUE)
-							.addContainerGap())
+							.addGap(492))
 						.addGroup(groupLayout.createSequentialGroup()
-							.addComponent(panel_1, GroupLayout.PREFERRED_SIZE, 859, GroupLayout.PREFERRED_SIZE)
+							.addComponent(panel_1, GroupLayout.PREFERRED_SIZE, 714, GroupLayout.PREFERRED_SIZE)
 							.addContainerGap())))
 		);
 		groupLayout.setVerticalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(groupLayout.createSequentialGroup()
+					.addContainerGap()
 					.addComponent(panel_1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(chartPanel, GroupLayout.PREFERRED_SIZE, 307, GroupLayout.PREFERRED_SIZE)
@@ -146,22 +153,41 @@ public class SimulatorView {
 					.addComponent(lblTaxasEmMbps)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(panel, GroupLayout.PREFERRED_SIZE, 46, GroupLayout.PREFERRED_SIZE)
-					.addContainerGap(135, Short.MAX_VALUE))
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(panel_2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+					.addContainerGap(62, Short.MAX_VALUE))
 		);
 		
-		JLabel simulationTimeLabel = new JLabel("Tempo de simulação(ms)(0 para infinito)");
+		JLabel lblNewLabel_3 = new JLabel("IC servidor:");
+		panel_2.add(lblNewLabel_3);
+		
+		serverCI = new JTextField();
+		serverCI.setEditable(false);
+		panel_2.add(serverCI);
+		serverCI.setColumns(20);
+		
+		JLabel lblNewLabel_4 = new JLabel("IC roteador:");
+		panel_2.add(lblNewLabel_4);
+		
+		routerCI = new JTextField();
+		routerCI.setEditable(false);
+		panel_2.add(routerCI);
+		routerCI.setColumns(20);
+		
+		JLabel lblNewLabel_5 = new JLabel("IC recepitor:");
+		panel_2.add(lblNewLabel_5);
+		
+		receiverCI = new JTextField();
+		receiverCI.setEditable(false);
+		panel_2.add(receiverCI);
+		receiverCI.setColumns(20);
+		
+		JLabel simulationTimeLabel = new JLabel("Tempo de simulação(ms)");
 		panel_1.add(simulationTimeLabel);
 		
 		simulationTimeTextField = new JTextField();
 		panel_1.add(simulationTimeTextField);
 		simulationTimeTextField.setColumns(10);
-		
-		JLabel lblIntervaloDeConfiana = new JLabel("Intervalo de confiança");
-		panel_1.add(lblIntervaloDeConfiana);
-		
-		textField_1 = new JTextField();
-		panel_1.add(textField_1);
-		textField_1.setColumns(10);
 		
 		JButton btnNewButton = new JButton("Iniciar");
 		
@@ -179,6 +205,14 @@ public class SimulatorView {
 		});
 		
 		panel_1.add(btnNewButton);
+		
+		JLabel lblNmeroDeVezes = new JLabel("Número de rodadas:");
+		panel_1.add(lblNmeroDeVezes);
+		
+		numOfRuns = new JTextField();
+		numOfRuns.setEditable(false);
+		panel_1.add(numOfRuns);
+		numOfRuns.setColumns(10);
 		panel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		
 		JLabel lblNewLabel = new JLabel("Taxa saída servidor\n");
@@ -207,6 +241,38 @@ public class SimulatorView {
 		frame.getContentPane().setLayout(groupLayout);
 	}
 	
+	public JTextField getServerCI() {
+		return serverCI;
+	}
+
+	public void setServerCI(JTextField serverCI) {
+		this.serverCI = serverCI;
+	}
+
+	public JTextField getRouterCI() {
+		return routerCI;
+	}
+
+	public void setRouterCI(JTextField routerCI) {
+		this.routerCI = routerCI;
+	}
+
+	public JTextField getReceiverCI() {
+		return receiverCI;
+	}
+
+	public void setReceiverCI(JTextField receiverCI) {
+		this.receiverCI = receiverCI;
+	}
+
+	public JTextField getNumOfRuns() {
+		return numOfRuns;
+	}
+
+	public void setNumOfRuns(JTextField numOfRuns) {
+		this.numOfRuns = numOfRuns;
+	}
+
 	protected void clearChart() {
 		JFreeChart chart = chartPanel.getChart();
 		XYPlot plot = (XYPlot) chart.getPlot();

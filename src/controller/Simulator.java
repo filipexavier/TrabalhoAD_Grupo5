@@ -22,6 +22,7 @@ import models.Router;
 import models.Server;
 import models.ServerGroup;
 import models.interfaces.Listener;
+import models.utils.ConfidenceInterval;
 import view.SimulatorView;
 
 
@@ -39,13 +40,13 @@ public class Simulator {
 	public static Float time = (float) 0;
 	
 	public static Integer serverBroadcast   = 0;
-	public static List<Double> serverAvarages;
+	public static List<Double> serverAvarages = new ArrayList<Double>();
 	
 	public static Integer routerBroadcast   = 0;
-	public static List<Double> routerAvarages;
+	public static List<Double> routerAvarages = new ArrayList<Double>();
 	
 	public static Integer receiverBroadcast = 0;
-	public static List<Double> receiverAvarages;
+	public static List<Double> receiverAvarages = new ArrayList<Double>();
 
 	public static void main(String[] args) throws IOException, InterruptedException {
 		startSimulator();
@@ -58,7 +59,6 @@ public class Simulator {
 	public static void shotEvent(EventType eventType, Float time, Object sender, Object value) {
 		Event event = new Event(eventType, time, sender, value);
 		eventBuffer.add(event);
-		System.out.println("O evento "+event+" foi enviado.");
 		if (time > event.getTime()) {
 			throw new RuntimeException("Evento anterior adicionou um evento no passado");
 		}
@@ -80,10 +80,6 @@ public class Simulator {
 		eventBuffer = new ArrayList<Event>();
 		listeners = new HashMap<EventType, Set<Listener>>();
 		
-		serverAvarages = new ArrayList<Double>();
-		routerAvarages = new ArrayList<Double>();
-		receiverAvarages = new ArrayList<Double>();
-		
 		for(EventType type: EventType.values()){
 			listeners.put( type, new HashSet<Listener>() );
 		}
@@ -94,13 +90,11 @@ public class Simulator {
 		Integer simulationTime = Integer.parseInt(SimulatorView.getInstance().getSimulationTimeTextField().getText());
 		while(eventBuffer.size() > 0 && (event == null || event.getTime() < simulationTime)){
 			event = eventBuffer.remove(0);
-//			Thread.sleep((long) Math.abs(time - event.getTime()));
 			time = event.getTime();
 			for(Listener listener: listeners.get(event.getType())){
 				listener.listen(event);
 			}
 			time = event.getTime();
-			System.out.println(time);
 			
 			switch (event.getType()) {
 			case SENDING_PACKAGE:
@@ -129,6 +123,16 @@ public class Simulator {
 		serverAvarages.add(new Double(SimulatorView.getInstance().getServerBroadcast().getText()));
 		receiverAvarages.add(new Double(SimulatorView.getInstance().getReceiverBroadcast().getText()));
 		routerAvarages.add(new Double(SimulatorView.getInstance().getRouteBroadcast().getText()));
+		
+		Integer numberOsRuns = serverAvarages.size();
+		
+		SimulatorView.getInstance().getNumOfRuns().setText(numberOsRuns.toString());
+		
+		if (numberOsRuns >= 30) {
+			SimulatorView.getInstance().getServerCI().setText(ConfidenceInterval.getConfidenceInterval(serverAvarages));
+			SimulatorView.getInstance().getReceiverCI().setText(ConfidenceInterval.getConfidenceInterval(receiverAvarages));
+			SimulatorView.getInstance().getRouterCI().setText(ConfidenceInterval.getConfidenceInterval(routerAvarages));
+		}
 	}
 
 	private static void clearSimulator() {
