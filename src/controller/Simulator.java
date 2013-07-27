@@ -37,10 +37,20 @@ public class Simulator {
 	public static final String FILENAME = "simulador.txt";
 	
 	public static Float time = (float) 0;
+	
 	public static Integer serverBroadcast   = 0;
+	public static List<Double> serverAvarages;
+	
 	public static Integer routerBroadcast   = 0;
+	public static List<Double> routerAvarages;
+	
 	public static Integer receiverBroadcast = 0;
+	public static List<Double> receiverAvarages;
 
+	public static void main(String[] args) throws IOException, InterruptedException {
+		startSimulator();
+	}
+	
 	public static void registerListener(EventType eventType, Listener listener) {
 		listeners.get(eventType).add(listener);
 	}
@@ -65,14 +75,15 @@ public class Simulator {
 			}
 		}
 	}
-	
-	public static void main(String[] args) throws IOException, InterruptedException {
-		startSimulator();
-	}
 
 	public static void startSimulator() throws IOException, InterruptedException {
 		eventBuffer = new ArrayList<Event>();
 		listeners = new HashMap<EventType, Set<Listener>>();
+		
+		serverAvarages = new ArrayList<Double>();
+		routerAvarages = new ArrayList<Double>();
+		receiverAvarages = new ArrayList<Double>();
+		
 		for(EventType type: EventType.values()){
 			listeners.put( type, new HashSet<Listener>() );
 		}
@@ -80,7 +91,8 @@ public class Simulator {
 		printInputData();
 
 		Event event = null;
-		while(eventBuffer.size() > 0){
+		Integer simulationTime = Integer.parseInt(SimulatorView.getInstance().getSimulationTimeTextField().getText());
+		while(eventBuffer.size() > 0 && (event == null || event.getTime() < simulationTime)){
 			event = eventBuffer.remove(0);
 //			Thread.sleep((long) Math.abs(time - event.getTime()));
 			time = event.getTime();
@@ -107,6 +119,29 @@ public class Simulator {
 			
 			sortEventBuffer(time);
 		}
+		
+		updateIntervalConfidence();
+		
+		clearSimulator();
+	}
+
+	private static void updateIntervalConfidence() {
+		serverAvarages.add(new Double(SimulatorView.getInstance().getServerBroadcast().getText()));
+		receiverAvarages.add(new Double(SimulatorView.getInstance().getReceiverBroadcast().getText()));
+		routerAvarages.add(new Double(SimulatorView.getInstance().getRouteBroadcast().getText()));
+	}
+
+	private static void clearSimulator() {
+		serverGroups = null;
+		listeners = null;
+		eventBuffer = null;
+		backgroundTraffic = null;
+		maximumSegmentSize = null;
+		router = null;
+		time = (float) 0;
+		serverBroadcast   = 0;
+		routerBroadcast   = 0;
+		receiverBroadcast = 0;
 	}
 
 	private static void sortEventBuffer(Float time) {
@@ -174,11 +209,11 @@ public class Simulator {
 		
 		//Ler taxa de atendimento do roteador(bps)
 		line = reader.readLine();
-		router = new Router( Integer.parseInt(line) );
+		router = new Router( Integer.parseInt(line)/8 );
 		
 		//Ler taxa de transmissão dos servidores(bps)
 		line = reader.readLine();
-		Integer broadcastRate = Integer.parseInt(line);
+		Integer broadcastRate = Integer.parseInt(line)/8;
 		
 		//Numero de grupos
 		line = reader.readLine();
@@ -201,14 +236,12 @@ public class Simulator {
 				group.getServers().add(server);
 				receiver.setServer(server);
 				servers.add(server);
-				
 			}
-			
 		}
 
 		//Ler tráfego de fundo
 		line = reader.readLine();
-		backgroundTraffic = new BackgroundTraffic(Float.parseFloat(line));
+		backgroundTraffic = new BackgroundTraffic(Float.parseFloat(line)/8);
 		
 		//Ler tamanho do buffer
 		line = reader.readLine();
@@ -216,7 +249,7 @@ public class Simulator {
 		
 		//Ler MSS
 		line = reader.readLine();
-		maximumSegmentSize = Integer.parseInt(line);
+		maximumSegmentSize = Integer.parseInt(line)/8;
 		
 		//Ler política de gargalo
 		line = reader.readLine();

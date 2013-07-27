@@ -4,19 +4,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import models.interfaces.Listener;
+import models.utils.ExponentialVariable;
 import controller.Simulator;
 
 public class Server implements Listener{
-	public static Integer threshold = 65535;
+	private Integer threshold = 65535;
 	private Integer broadcastRate;
 	private ExponentialVariable rate;
 	private ServerGroup group;
 	private Receiver receiver;
 	private Float cwnd, realReturnTime;
-	private Integer duplicatedAcks, nextAck, nextPackage, numOfPackagesToSend; 
+	
+	private Integer lastAck, nextPackage, numOfPackagesToSend;
+	private Map<Integer, Integer> duplicatedAcks;
 		
 	double expectedReturnTime;
 	double deviationReturnTime;
@@ -43,8 +47,8 @@ public class Server implements Listener{
 		Simulator.registerListener(EventType.TIME_OUT, this);
 		Simulator.registerListener(EventType.SACK, this);
 		
-		duplicatedAcks = 0;
-		nextAck = 0;
+		duplicatedAcks = new HashMap<Integer, Integer>();
+		lastAck = 0;
 		deviationReturnTime = 0;
 		expectedReturnTime = 2*group.getBroadcastDelay();
 		realReturnTime = (float) 0;
@@ -82,10 +86,11 @@ public class Server implements Listener{
 		if (((Server)event.getSender()).equals(this)) {
 			
 			Float time = (float) (event.getTime() + (1000.0*Simulator.maximumSegmentSize)/broadcastRate);
-			
+
 			Simulator.cancelEvent(EventType.TIME_OUT, this, nextPackage);
 			Simulator.shotEvent(EventType.SENDING_PACKAGE, time, this, nextPackage);
 			
+			rttPerPackage.put((Integer) nextPackage, event.getTime());
 			sendedPackages.add(nextPackage);			
 			nextPackage += Simulator.maximumSegmentSize;
 			
@@ -100,10 +105,7 @@ public class Server implements Listener{
 		if (((Server)event.getSender()).equals(this)) {
 			
 			double timeOutTime = getTimeOutTime(event);
-			Simulator.shotEvent(EventType.TIME_OUT, (float) timeOutTime, this, event.getValue());
-
-			rttPerPackage.put((Integer) event.getValue(), event.getTime());
-			
+			Simulator.shotEvent(EventType.TIME_OUT, (float) timeOutTime, this, event.getValue());			
 			Simulator.shotEvent(EventType.PACKAGE_SENT, event.getTime() + group.getBroadcastDelay(), this, event.getValue());
 			
 			if(numOfPackagesToSend > 0) {
@@ -129,45 +131,62 @@ public class Server implements Listener{
 			Integer ackValue = (Integer) sack.get(0);
 			Set<Integer> packageSequences = (Set<Integer>) sack.get(1);
 			
+			if (lastAck > ackValue) {
+				throw new RuntimeException("Ack diminuindo");
+			}
 			
-			if (nextAck != ackValue) {	
-				if (rttPerPackage.get(nextAck) != null) {
-					realReturnTime = event.getTime() - rttPerPackage.get(nextAck);
-					rttPerPackage.remove(nextAck);
+			if (lastAck != ackValue) {	
+				if (rttPerPackage.get(lastAck) != null) {
+					realReturnTime = event.getTime() - rttPerPackage.get(lastAck);
+					rttPerPackage.remove(lastAck);
 				}
 				
 				if(cwnd < threshold) {
 					this.cwnd += Simulator.maximumSegmentSize;
 				} else{
-					Integer numAcks = Math.round(this.cwnd/Simulator.maximumSegmentSize);
+					Integer numAcks = (int) Math.floor(this.cwnd/Simulator.maximumSegmentSize);
 					this.cwnd += Simulator.maximumSegmentSize/numAcks;
 				}
 				
-				duplicatedAcks = 0;
-				Simulator.cancelEvent(EventType.TIME_OUT, this, nextAck);
-				sendedPackages.remove(nextAck);
+				duplicatedAcks.put(lastAck, null);
+				duplicatedAcks.put(ackValue, 0);
+				Simulator.cancelEvent(EventType.TIME_OUT, this, lastAck);
+				sendedPackages.remove(lastAck);
 
-				nextAck = ackValue;
+				lastAck = ackValue;
+				nextPackage = ackValue;
 				
-				while(receivedAckPackages.contains(nextPackage)) {
-					sendedPackages.remove(nextPackage);
-					receivedAckPackages.remove(nextPackage);
+				List<Integer> removeReceivedPackages = new ArrayList<Integer>();				
+				for (Integer receivedPackage : receivedAckPackages) {
+					if (receivedPackage < ackValue) {
+						removeReceivedPackages.add(receivedPackage);
+					}else if(receivedPackage == ackValue) {
+						throw new RuntimeException("Ack já recebido");
+					}
+				}
+				receivedAckPackages.removeAll(removeReceivedPackages);
+				sendedPackages.removeAll(removeReceivedPackages);
+				
+				while(sendedPackages.contains(nextPackage)) {
 					nextPackage += Simulator.maximumSegmentSize;
 				}
-				nextPackage = nextAck;
-	
+				
 				numOfPackagesToSend = getNumberOfPackagesToSend();
 				Simulator.shotEvent(EventType.SEND_PACKAGE, event.getTime(), this, null);
 			} else {
-				receivedAckPackages.addAll(packageSequences);
+				for (Integer packageSequence : packageSequences) {
+					receivedAckPackages.add(packageSequence);
+					Simulator.cancelEvent(EventType.TIME_OUT, this, packageSequence);
+				}
+				Integer acks = duplicatedAcks.get(ackValue);
+				duplicatedAcks.put(acks, ++acks);				
 				
-				duplicatedAcks++;
-				if(duplicatedAcks == 3) {
-					duplicatedAcks = 0;
-					threshold = Math.round(cwnd/2);
+				if(acks == 3) {
+					duplicatedAcks.put(acks, null);
+					threshold = (int) Math.floor(cwnd/2);
 					cwnd = (float) (threshold + 3.0*Simulator.maximumSegmentSize);
 					
-					restartSend(nextAck, event.getTime());
+					restartSend(acks, event.getTime());
 				}
 			}
 		}
@@ -175,6 +194,7 @@ public class Server implements Listener{
 
 	private void restartSend(Integer nextPackage, Float time) {
 		List<Integer> removedPackges = new ArrayList<Integer>();
+		
 		for (Integer packge : sendedPackages) {
 			if (!receivedAckPackages.contains(sendedPackages)) {
 				removedPackges.add(packge);
@@ -195,7 +215,7 @@ public class Server implements Listener{
 	
 	private void listenTimeOut(Event event) {
 		if (((Server)event.getSender()) == this) {
-			threshold = Math.round(cwnd/2);
+			threshold = (int) Math.floor(cwnd/2);
 			cwnd = new Float(Simulator.maximumSegmentSize);
 			restartSend((Integer) event.getValue(), event.getTime());
 		}

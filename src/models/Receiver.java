@@ -24,20 +24,26 @@ public class Receiver implements Listener {
 	public void listen(Event event) {
 		if( this.getServer() == (Server) event.getSender() ) {
 			Integer packge = (Integer)event.getValue();
+			
 			if (nextAck.equals(packge)) {
 				nextAck += Simulator.maximumSegmentSize;
 				while(receivedPackages.contains(nextAck)) {
 					receivedPackages.remove(nextAck);
 					nextAck += Simulator.maximumSegmentSize;
 				}
-			} else if(packge > nextAck) {
+			} else if(packge > nextAck) {				
 				receivedPackages.add(packge);
 			}
-			List<Object> value = new ArrayList<Object>();
-			value.add(nextAck);
-			value.add(receivedPackages);
-			Simulator.shotEvent(EventType.SACK, event.getTime(), this, value);
+			
+			sendSack(event);
 		}
+	}
+
+	private void sendSack(Event event) {
+		List<Object> value = new ArrayList<Object>();
+		value.add(nextAck);
+		value.add(receivedPackages);
+		Simulator.shotEvent(EventType.SACK, event.getTime(), this, value);
 	}
 
 	public Server getServer() {

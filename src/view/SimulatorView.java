@@ -1,10 +1,18 @@
 package view;
 
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.LayoutStyle.ComponentPlacement;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -15,18 +23,6 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import controller.Simulator;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.JPanel;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.ColumnSpec;
-import com.jgoodies.forms.layout.RowSpec;
-import com.jgoodies.forms.factories.FormFactory;
-import java.awt.FlowLayout;
 
 public class SimulatorView {
 
@@ -61,6 +57,10 @@ public class SimulatorView {
 
 	private JTextField routeBroadcast;
 	private JTextField receiverBroadcast;
+	private JTextField simulationTimeTextField;
+
+
+	private JTextField textField_1;
 	
 	public static SimulatorView getInstance() {
 		if (instance == null) {
@@ -76,7 +76,6 @@ public class SimulatorView {
 	 */
 	public static void main(String[] args) throws IOException, InterruptedException {
 		SimulatorView window = SimulatorView.getInstance();
-		Simulator.startSimulator();
 	}
 
 	/**
@@ -114,7 +113,9 @@ public class SimulatorView {
 		
 		JPanel panel = new JPanel();
 		
-		JLabel lblTaxasEmMbps = new JLabel("Taxas em Mbps");
+		JLabel lblTaxasEmMbps = new JLabel("Taxas em Pacotes por segundo");
+		
+		JPanel panel_1 = new JPanel();
 		
 		GroupLayout groupLayout = new GroupLayout(frame.getContentPane());
 		groupLayout.setHorizontalGroup(
@@ -122,27 +123,62 @@ public class SimulatorView {
 				.addGroup(groupLayout.createSequentialGroup()
 					.addContainerGap()
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addGroup(groupLayout.createSequentialGroup()
-							.addComponent(chartPanel, GroupLayout.DEFAULT_SIZE, 856, Short.MAX_VALUE)
+						.addGroup(Alignment.TRAILING, groupLayout.createSequentialGroup()
+							.addComponent(chartPanel, GroupLayout.DEFAULT_SIZE, 1212, Short.MAX_VALUE)
 							.addContainerGap())
 						.addGroup(Alignment.TRAILING, groupLayout.createSequentialGroup()
 							.addComponent(lblTaxasEmMbps)
 							.addGap(422))
+						.addGroup(Alignment.TRAILING, groupLayout.createSequentialGroup()
+							.addComponent(panel, GroupLayout.DEFAULT_SIZE, 1212, Short.MAX_VALUE)
+							.addContainerGap())
 						.addGroup(groupLayout.createSequentialGroup()
-							.addComponent(panel, GroupLayout.DEFAULT_SIZE, 856, Short.MAX_VALUE)
+							.addComponent(panel_1, GroupLayout.PREFERRED_SIZE, 859, GroupLayout.PREFERRED_SIZE)
 							.addContainerGap())))
 		);
 		groupLayout.setVerticalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(groupLayout.createSequentialGroup()
-					.addContainerGap()
+					.addComponent(panel_1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(chartPanel, GroupLayout.PREFERRED_SIZE, 307, GroupLayout.PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addComponent(lblTaxasEmMbps)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(panel, GroupLayout.PREFERRED_SIZE, 46, GroupLayout.PREFERRED_SIZE)
-					.addContainerGap(145, Short.MAX_VALUE))
+					.addContainerGap(135, Short.MAX_VALUE))
 		);
+		
+		JLabel simulationTimeLabel = new JLabel("Tempo de simulação(ms)(0 para infinito)");
+		panel_1.add(simulationTimeLabel);
+		
+		simulationTimeTextField = new JTextField();
+		panel_1.add(simulationTimeTextField);
+		simulationTimeTextField.setColumns(10);
+		
+		JLabel lblIntervaloDeConfiana = new JLabel("Intervalo de confiança");
+		panel_1.add(lblIntervaloDeConfiana);
+		
+		textField_1 = new JTextField();
+		panel_1.add(textField_1);
+		textField_1.setColumns(10);
+		
+		JButton btnNewButton = new JButton("Iniciar");
+		
+		btnNewButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				clearChart();
+				try {
+					Simulator.startSimulator();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
+		
+		panel_1.add(btnNewButton);
 		panel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		
 		JLabel lblNewLabel = new JLabel("Taxa saída servidor\n");
@@ -171,10 +207,27 @@ public class SimulatorView {
 		frame.getContentPane().setLayout(groupLayout);
 	}
 	
+	protected void clearChart() {
+		JFreeChart chart = chartPanel.getChart();
+		XYPlot plot = (XYPlot) chart.getPlot();
+		XYSeriesCollection dataset = new XYSeriesCollection();
+		XYSeries series = new XYSeries("txwnd/MSS");
+		dataset.addSeries(series);
+		plot.setDataset(dataset);
+	}
+
 	public void updateChart(Integer value, Float time) {
 		JFreeChart chart = chartPanel.getChart();
 		XYPlot plot = (XYPlot) chart.getPlot();
 		XYSeriesCollection dataset = (XYSeriesCollection) plot.getDataset();
 		dataset.getSeries(0).add(time, value);
+	}
+	
+	public JTextField getSimulationTimeTextField() {
+		return simulationTimeTextField;
+	}
+
+	public void setSimulationTimeTextField(JTextField simulationTimeTextField) {
+		this.simulationTimeTextField = simulationTimeTextField;
 	}
 }

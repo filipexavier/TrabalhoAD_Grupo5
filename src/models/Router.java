@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Random;
 
 import models.interfaces.Listener;
+import models.utils.ExponentialVariable;
 import controller.Simulator;
 
 public class Router implements Listener {

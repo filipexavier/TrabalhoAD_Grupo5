@@ -1,4 +1,4 @@
-package models;
+package models.utils;
 
 import models.abstracts.RandomVariable;
 
