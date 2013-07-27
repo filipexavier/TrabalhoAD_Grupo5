@@ -76,7 +76,7 @@ public class SimulatorView {
 	 * @throws IOException 
 	 */
 	public static void main(String[] args) throws IOException, InterruptedException {
-		SimulatorView window = SimulatorView.getInstance();
+		SimulatorView.getInstance();
 	}
 
 	/**

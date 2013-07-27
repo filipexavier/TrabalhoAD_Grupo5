@@ -31,4 +31,8 @@ public class BackgroundTraffic extends Server{
 			Simulator.shotEvent(EventType.SEND_PACKAGE, event.getTime() + 24, this, null);
 		}
 	}
+
+	public Float getRate() {
+		return rate;
+	}
 }

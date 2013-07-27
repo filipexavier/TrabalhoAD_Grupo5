@@ -9,6 +9,7 @@ import java.util.Set;
 
 import models.interfaces.Listener;
 import models.utils.ExponentialVariable;
+import models.utils.HighQualityRandom;
 import controller.Simulator;
 
 public class Server implements Listener{
@@ -59,7 +60,11 @@ public class Server implements Listener{
 	public void startServer() {
 		cwnd = new Float(Simulator.maximumSegmentSize);
 		this.rate = new ExponentialVariable(broadcastRate/(1000.0*Simulator.maximumSegmentSize));
-		Simulator.shotEvent(EventType.SEND_PACKAGE, (float) 0, this, null);
+		
+		HighQualityRandom randomGenerator = new HighQualityRandom();
+		
+		
+		Simulator.shotEvent(EventType.SEND_PACKAGE, (float) randomGenerator.nextFloat()*100, this, null);
 	}
 	
 	@Override

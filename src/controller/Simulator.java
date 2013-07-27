@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import models.BackgroundTraffic;
@@ -39,18 +40,13 @@ public class Simulator {
 	
 	public static Float time = (float) 0;
 	
+	public static HashMap<Float, Integer> plot;
 	public static Integer serverBroadcast   = 0;
 	public static List<Double> serverAvarages = new ArrayList<Double>();
-	
 	public static Integer routerBroadcast   = 0;
 	public static List<Double> routerAvarages = new ArrayList<Double>();
-	
 	public static Integer receiverBroadcast = 0;
 	public static List<Double> receiverAvarages = new ArrayList<Double>();
-
-	public static void main(String[] args) throws IOException, InterruptedException {
-		startSimulator();
-	}
 	
 	public static void registerListener(EventType eventType, Listener listener) {
 		listeners.get(eventType).add(listener);
@@ -79,6 +75,7 @@ public class Simulator {
 	public static void startSimulator() throws IOException, InterruptedException {
 		eventBuffer = new ArrayList<Event>();
 		listeners = new HashMap<EventType, Set<Listener>>();
+		plot = new HashMap<Float, Integer>();
 		
 		for(EventType type: EventType.values()){
 			listeners.put( type, new HashSet<Listener>() );
@@ -88,6 +85,7 @@ public class Simulator {
 
 		Event event = null;
 		Integer simulationTime = Integer.parseInt(SimulatorView.getInstance().getSimulationTimeTextField().getText());
+		long realTime = System.currentTimeMillis();
 		while(eventBuffer.size() > 0 && (event == null || event.getTime() < simulationTime)){
 			event = eventBuffer.remove(0);
 			time = event.getTime();
@@ -108,15 +106,21 @@ public class Simulator {
 				break;
 			default:
 				break;
-			}
-			
-			
+			}		
 			sortEventBuffer(time);
 		}
-		
+		updateChart();
 		updateIntervalConfidence();
 		
 		clearSimulator();
+		System.out.println(System.currentTimeMillis() - realTime);
+		realTime = System.currentTimeMillis();
+	}
+
+	private static void updateChart() {
+		for (Entry<Float, Integer> entry : plot.entrySet()) {
+			SimulatorView.getInstance().updateChart(entry.getValue(), entry.getKey());
+		}
 	}
 
 	private static void updateIntervalConfidence() {
@@ -150,7 +154,7 @@ public class Simulator {
 
 	private static void sortEventBuffer(Float time) {
 		Collections.sort(eventBuffer);
-		updateChart(time);
+		updatePlot(time);
 		if (time > 0) {
 			SimulatorView.getInstance().getServerBroadcast().setText(new Float(serverBroadcast*1000/time).toString());
 			SimulatorView.getInstance().getRouteBroadcast().setText(new Float(routerBroadcast*1000/time).toString());
@@ -158,7 +162,7 @@ public class Simulator {
 		}
 	}
 
-	private static void updateChart(Float time) {
+	private static void updatePlot(Float time) {
 		Integer  value = 0;
 		Integer numOfServers = 0;
 		
@@ -172,23 +176,23 @@ public class Simulator {
 			value /= numOfServers;
 			value /= Simulator.maximumSegmentSize;
 					
-			SimulatorView.getInstance().updateChart(value, time);	
+			plot.put(time, value);
 		}
 	}
 
 	private static void printInputData() {
 		System.out.println("	================ LOG DADOS DO ARQUIVO =================");
 		System.out.println("	=======================================================\n");
-		System.out.println("		Tráfego de fundo: " + backgroundTraffic + " bps");
+		System.out.println("		Tráfego de fundo: " + 8*backgroundTraffic.getRate() + " bps");
 		System.out.println("		Tamanho do buffer: " + router.getBufferSize() + " pacotes");
-		System.out.println("		MSS: " + (maximumSegmentSize/8) + " bytes");
+		System.out.println("		MSS: " + (maximumSegmentSize) + " bytes");
 		System.out.println("		Política de atendimento: " + router.getBottleNeckPolicy());
-		System.out.println("		Taxa de transmissão do roteador: " + router.getRate() + " bps");
+		System.out.println("		Taxa de transmissão do roteador: " + router.getRate()*8 + " bps");
 		System.out.println("	   ---------------------------------------------");
 		for(ServerGroup group : serverGroups){
 			System.out.println("		Servidores do grupo " + (serverGroups.indexOf(group)+1) +  ": " );
 			for(Server server: group.getServers()){
-				System.out.println("		Servidor com taxa " + server.getBroadcastRate() + "bps do grupo " + (serverGroups.indexOf(server.getGroup())+1)  );
+				System.out.println("		Servidor com taxa " + server.getBroadcastRate()*8 + "bps do grupo " + (serverGroups.indexOf(server.getGroup())+1)  );
 			}
 		}
 		 		
