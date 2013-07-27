@@ -19,6 +19,8 @@ public class Server implements Listener{
 	private ServerGroup group;
 	private Receiver receiver;
 	private Float cwnd, realReturnTime;
+	private Integer serverId;
+	
 	
 	private Integer lastAck, nextPackage, numOfPackagesToSend;
 	private Map<Integer, Integer> duplicatedAcks;
@@ -35,7 +37,7 @@ public class Server implements Listener{
 		
 	}
 	
-	public Server(Integer rate, ServerGroup group, Receiver receiver) {
+	public Server(Integer rate, ServerGroup group, Receiver receiver, Integer serverId) {
 		this.broadcastRate = rate;
 		this.group = group;
 		this.setReceiver(receiver);
@@ -55,6 +57,7 @@ public class Server implements Listener{
 		realReturnTime = (float) 0;
 		numOfPackagesToSend = 1;
 		nextPackage = 0;
+		this.serverId = serverId;
 	}
 	
 	public void startServer() {
@@ -258,6 +261,9 @@ public class Server implements Listener{
 	public void setCwnd(Float cwnd) {
 		this.cwnd = cwnd;
 	}
-
-
+	@Override
+	public String toString() {
+		return "Servidor "+serverId;
+	}
+	
 }

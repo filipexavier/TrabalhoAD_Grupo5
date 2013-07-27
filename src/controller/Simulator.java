@@ -39,8 +39,9 @@ public class Simulator {
 	public static final String FILENAME = "simulador.txt";
 	
 	public static Float time = (float) 0;
+	public static Integer serverId;
 	
-	public static HashMap<Float, Integer> plot;
+	public static HashMap<Server, HashMap<Float, Integer>> series;
 	public static Integer serverBroadcast   = 0;
 	public static List<Double> serverAvarages = new ArrayList<Double>();
 	public static Integer routerBroadcast   = 0;
@@ -73,9 +74,10 @@ public class Simulator {
 	}
 
 	public static void startSimulator() throws IOException, InterruptedException {
+		serverId = 1;
 		eventBuffer = new ArrayList<Event>();
 		listeners = new HashMap<EventType, Set<Listener>>();
-		plot = new HashMap<Float, Integer>();
+		series = new HashMap<Server, HashMap<Float, Integer>>();
 		
 		for(EventType type: EventType.values()){
 			listeners.put( type, new HashSet<Listener>() );
@@ -118,9 +120,7 @@ public class Simulator {
 	}
 
 	private static void updateChart() {
-		for (Entry<Float, Integer> entry : plot.entrySet()) {
-			SimulatorView.getInstance().updateChart(entry.getValue(), entry.getKey());
-		}
+		SimulatorView.getInstance().updateChart(series);
 	}
 
 	private static void updateIntervalConfidence() {
@@ -164,20 +164,18 @@ public class Simulator {
 
 	private static void updatePlot(Float time) {
 		Integer  value = 0;
-		Integer numOfServers = 0;
 		
 		for (ServerGroup serverGroup : serverGroups) {
 			for (Server server : serverGroup.getServers()) {
 				value += (int) Math.floor(server.getCwnd());
-				numOfServers++;
+				value /= Simulator.maximumSegmentSize;
+				if(series.get(server) == null) {
+					series.put(server, new HashMap<Float, Integer>());
+				}
+				series.get(server).put(time, value);
+				value = 0;
 			}
-		}
-		if (numOfServers > 0) {
-			value /= numOfServers;
-			value /= Simulator.maximumSegmentSize;
-					
-			plot.put(time, value);
-		}
+		}			
 	}
 
 	private static void printInputData() {
@@ -240,7 +238,7 @@ public class Simulator {
 			int j;
 			for(j=0; j<nServers; j++){
 				Receiver receiver = new Receiver();
-				Server server = new Server(broadcastRate, group, receiver);
+				Server server = new Server(broadcastRate, group, receiver, serverId++);
 				group.getServers().add(server);
 				receiver.setServer(server);
 				servers.add(server);

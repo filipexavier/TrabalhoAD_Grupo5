@@ -4,6 +4,8 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map.Entry;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -13,6 +15,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
+
+import models.Server;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -95,11 +99,7 @@ public class SimulatorView {
 		frame.setBounds(100, 100, 1224, 560);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		XYSeriesCollection dataset = new XYSeriesCollection();
-		XYSeries series = new XYSeries("txwnd/MSS");
-		
-		dataset.addSeries(series);
-		
+		XYSeriesCollection dataset = new XYSeriesCollection();				
 		chart = ChartFactory.createXYLineChart(
 				 "Gráfico do simulador", // Title
 				 "Tempo", // x-axis Label
@@ -277,16 +277,21 @@ public class SimulatorView {
 		JFreeChart chart = chartPanel.getChart();
 		XYPlot plot = (XYPlot) chart.getPlot();
 		XYSeriesCollection dataset = new XYSeriesCollection();
-		XYSeries series = new XYSeries("txwnd/MSS");
-		dataset.addSeries(series);
 		plot.setDataset(dataset);
 	}
 
-	public void updateChart(Integer value, Float time) {
+	public void updateChart(HashMap<Server, HashMap<Float, Integer>> series) {
 		JFreeChart chart = chartPanel.getChart();
 		XYPlot plot = (XYPlot) chart.getPlot();
+		
 		XYSeriesCollection dataset = (XYSeriesCollection) plot.getDataset();
-		dataset.getSeries(0).add(time, value);
+		for (Entry<Server, HashMap<Float, Integer>> entry : series.entrySet()) {
+			XYSeries serie = new XYSeries("txwnd/MSS " + entry.getKey());
+			for (Entry<Float, Integer> values : entry.getValue().entrySet()) {
+				serie.add(values.getKey(), values.getValue());
+			}
+			dataset.addSeries(serie);
+		}		
 	}
 	
 	public JTextField getSimulationTimeTextField() {
