@@ -18,16 +18,17 @@ public class BackgroundTraffic extends Server{
 	
 	public void startBackgroundTraffic() {
 		sendVariable = new ExponentialVariable(rate/(1000*Simulator.maximumSegmentSize));
-		Simulator.shotEvent(EventType.SEND_PACKAGE, (float) 0, this, null);
+		Simulator.shotEvent(EventType.SEND_PACKAGE, (float) 24, this, null);
 	}
 
 	@Override
 	public void listen(Event event) {
 		if (event.getSender().equals(this)) {
-			Float nextTime = new Float(sendVariable.getSample());
-			Simulator.shotEvent(EventType.PACKAGE_SENT, event.getTime() + nextTime, this, nextPackage);
-			nextPackage += Simulator.maximumSegmentSize;
-			Simulator.shotEvent(EventType.SEND_PACKAGE, event.getTime() + nextTime, this, null);
+			for (int i = 0; i < 10; i++) {
+				Simulator.shotEvent(EventType.PACKAGE_SENT, event.getTime(), this, nextPackage);
+				nextPackage += Simulator.maximumSegmentSize;
+			}
+			Simulator.shotEvent(EventType.SEND_PACKAGE, event.getTime() + 24, this, null);
 		}
 	}
 }

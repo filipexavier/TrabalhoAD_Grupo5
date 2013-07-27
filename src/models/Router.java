@@ -112,7 +112,7 @@ public class Router implements Listener {
 	}
 
 	private void listenDeliverPackage(Event event) {
-		Float time = (float) (event.getTime() + sendVariable.getSample());
+		Float time = (float) (event.getTime() + (1000.0*Simulator.maximumSegmentSize)/rate);
 		Event serverEvent = (Event) event.getValue();
 		Simulator.shotEvent(EventType.PACKAGE_DELIVERED, time, serverEvent.getSender(), serverEvent.getValue());
 	}
