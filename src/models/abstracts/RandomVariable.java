@@ -1,6 +1,6 @@
 package models.abstracts;
 
-import models.HighQualityRandom;
+import models.utils.HighQualityRandom;
 
 public abstract class RandomVariable {
 	

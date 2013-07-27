@@ -85,7 +85,7 @@ public class Server implements Listener{
 	private void listenSendPackage(Event event) {
 		if (((Server)event.getSender()).equals(this)) {
 			
-			Float time = (float) (event.getTime() + (1000.0*Simulator.maximumSegmentSize)/broadcastRate);
+			Float time = (float) (event.getTime() + rate.getSample());
 
 			Simulator.cancelEvent(EventType.TIME_OUT, this, nextPackage);
 			Simulator.shotEvent(EventType.SENDING_PACKAGE, time, this, nextPackage);

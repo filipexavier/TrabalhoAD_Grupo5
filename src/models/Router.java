@@ -24,7 +24,7 @@ public class Router implements Listener {
 	private Integer maxth = 15;
 	private Float maxp = 0.02f;
 	private Float avg = 0f;
-	private Integer count = 0; // representa o n�mero de pacotes n�o descartados desde o �ltimo descarte
+	private Integer count = 0; 
 	private Random rand;
 	private Float lastBusyPeriodTime =  (float) 0.0;
 
@@ -112,7 +112,7 @@ public class Router implements Listener {
 	}
 
 	private void listenDeliverPackage(Event event) {
-		Float time = (float) (event.getTime() + (1000.0*Simulator.maximumSegmentSize)/rate);
+		Float time = (float) (event.getTime() + sendVariable.getSample());
 		Event serverEvent = (Event) event.getValue();
 		Simulator.shotEvent(EventType.PACKAGE_DELIVERED, time, serverEvent.getSender(), serverEvent.getValue());
 	}
