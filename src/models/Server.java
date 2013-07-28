@@ -169,7 +169,12 @@ public class Server implements Listener {
 				
 				if(acks == 3) {
 					duplicatedAcks.put(acks, null);
+					
 					threshold = (float) Math.floor(cwnd/2);
+					if(threshold < Simulator.maximumSegmentSize) {
+						throw new RuntimeException("threshold < Simulator.maximumSegmentSize");
+					}
+					
 					cwnd = (float) (threshold + 3.0*Simulator.maximumSegmentSize);
 					
 					restartSend(acks, event.getTime());
@@ -185,6 +190,9 @@ public class Server implements Listener {
 					this.cwnd += Simulator.maximumSegmentSize;
 				} else{
 					Integer numAcks = (int) Math.floor(this.cwnd/Simulator.maximumSegmentSize);
+					if(numAcks == 0) {
+						throw new RuntimeException("cwnd = 0");
+					}
 					this.cwnd += Simulator.maximumSegmentSize/numAcks;
 				}
 				
@@ -252,7 +260,12 @@ public class Server implements Listener {
 	
 	private void listenTimeOut(Event event) {
 		if (((Server)event.getSender()) == this) {
+			
 			threshold = (float) Math.floor(cwnd/2);
+			if(threshold < Simulator.maximumSegmentSize) {
+				throw new RuntimeException("threshold < Simulator.maximumSegmentSize");
+			}
+			
 			cwnd = new Float(Simulator.maximumSegmentSize);
 			restartSend((Integer) event.getValue(), event.getTime());
 		}
