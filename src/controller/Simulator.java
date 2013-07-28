@@ -96,24 +96,32 @@ public class Simulator {
 			time = event.getTime();
 			for(Listener listener: listeners.get(event.getType())){
 				listener.listen(event);
-			}
-			time = event.getTime();
-			
-			switch (event.getType()) {
-			case SENDING_PACKAGE:
-				serverBroadcast++;
-				break;
-			case DELIVER_PACKAGE:
-				routerBroadcast++;
-				break;
-			case SACK:
-				receiverBroadcast++;
-				break;
-			default:
-				break;
+			}			
+			if (time > new Float(SimulatorView.getInstance().getTransientTime().getText())) {
+				switch (event.getType()) {
+				case SENDING_PACKAGE:
+					serverBroadcast++;
+					break;
+				case DELIVER_PACKAGE:
+					routerBroadcast++;
+					break;
+				case SACK:
+					receiverBroadcast++;
+					break;
+				default:
+					break;
+				}
 			}		
 			sortEventBuffer(time);
 		}
+		
+		if (time > 0) {
+			Float stationaryTime = time - new Float(SimulatorView.getInstance().getTransientTime().getText());
+			SimulatorView.getInstance().getServerBroadcast().setText(new Float(serverBroadcast*1000/stationaryTime).toString());
+			SimulatorView.getInstance().getRouteBroadcast().setText(new Float(routerBroadcast*1000/stationaryTime).toString());
+			SimulatorView.getInstance().getReceiverBroadcast().setText(new Float(receiverBroadcast*1000/stationaryTime).toString());
+		}
+		
 		updateChart();
 		updateIntervalConfidence();
 		
@@ -158,11 +166,6 @@ public class Simulator {
 	private static void sortEventBuffer(Float time) {
 		Collections.sort(eventBuffer);
 		updatePlot(time);
-		if (time > 0) {
-			SimulatorView.getInstance().getServerBroadcast().setText(new Float(serverBroadcast*1000/time).toString());
-			SimulatorView.getInstance().getRouteBroadcast().setText(new Float(routerBroadcast*1000/time).toString());
-			SimulatorView.getInstance().getReceiverBroadcast().setText(new Float(receiverBroadcast*1000/time).toString());
-		}
 	}
 
 	private static void updatePlot(Float time) {

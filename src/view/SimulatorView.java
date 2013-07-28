@@ -76,6 +76,7 @@ public class SimulatorView {
 	private JTextField textField_3;
 	private JTextField textField_4;
 	private JTextField textField_5;
+	private JTextField transientTime;
 	
 	public static SimulatorView getInstance() {
 		if (instance == null) {
@@ -204,34 +205,34 @@ public class SimulatorView {
 		groupLayout.setHorizontalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(groupLayout.createSequentialGroup()
-						.addGap(25)
-						.addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
-							.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
-								.addGroup(groupLayout.createSequentialGroup()
-									.addComponent(separator, GroupLayout.PREFERRED_SIZE, 1, GroupLayout.PREFERRED_SIZE)
-									.addGap(202)
-									.addComponent(lblTaxasEmMbps)
-									.addGap(492))
-								.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-									.addGroup(groupLayout.createSequentialGroup()
-										.addComponent(lblGrupo)
-										.addGap(18)
-										.addComponent(separator_2, GroupLayout.PREFERRED_SIZE, 1084, GroupLayout.PREFERRED_SIZE))
-									.addComponent(chartPanel, GroupLayout.PREFERRED_SIZE, 1174, GroupLayout.PREFERRED_SIZE)
-									.addComponent(panel_1, GroupLayout.PREFERRED_SIZE, 770, GroupLayout.PREFERRED_SIZE)))
+					.addGap(25)
+					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
+						.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
 							.addGroup(groupLayout.createSequentialGroup()
-								.addComponent(lblNewLabel_6)
-								.addPreferredGap(ComponentPlacement.RELATED)
-								.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
-									.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-										.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false)
-											.addComponent(panel_2, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 1100, Short.MAX_VALUE)
-											.addComponent(panel, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 1100, GroupLayout.PREFERRED_SIZE))
-										.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false)
-											.addComponent(panel_4, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-											.addComponent(panel_3, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 1100, GroupLayout.PREFERRED_SIZE)))
-									.addComponent(separator_1, GroupLayout.PREFERRED_SIZE, 1084, GroupLayout.PREFERRED_SIZE))))
-						.addGap(98))
+								.addComponent(separator, GroupLayout.PREFERRED_SIZE, 1, GroupLayout.PREFERRED_SIZE)
+								.addGap(202)
+								.addComponent(lblTaxasEmMbps)
+								.addGap(492))
+							.addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
+								.addGroup(groupLayout.createSequentialGroup()
+									.addComponent(lblGrupo)
+									.addGap(18)
+									.addComponent(separator_2, GroupLayout.PREFERRED_SIZE, 1084, GroupLayout.PREFERRED_SIZE))
+								.addComponent(chartPanel, GroupLayout.DEFAULT_SIZE, 1174, Short.MAX_VALUE)
+								.addComponent(panel_1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+						.addGroup(groupLayout.createSequentialGroup()
+							.addComponent(lblNewLabel_6)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
+								.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+									.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false)
+										.addComponent(panel_2, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 1100, Short.MAX_VALUE)
+										.addComponent(panel, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 1100, GroupLayout.PREFERRED_SIZE))
+									.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false)
+										.addComponent(panel_4, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+										.addComponent(panel_3, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 1100, GroupLayout.PREFERRED_SIZE)))
+								.addComponent(separator_1, GroupLayout.PREFERRED_SIZE, 1084, GroupLayout.PREFERRED_SIZE))))
+					.addGap(98))
 		);
 		groupLayout.setVerticalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
@@ -294,6 +295,7 @@ public class SimulatorView {
 		panel_1.add(simulationTimeLabel);
 		
 		simulationTimeTextField = new JTextField();
+		simulationTimeTextField.setText("10000");
 		panel_1.add(simulationTimeTextField);
 		simulationTimeTextField.setColumns(10);
 		
@@ -311,6 +313,14 @@ public class SimulatorView {
 				}
 			}
 		});
+		
+		JLabel lblTempoAtEstacionar = new JLabel("Tempo até estacionar");
+		panel_1.add(lblTempoAtEstacionar);
+		
+		transientTime = new JTextField();
+		transientTime.setText("1000");
+		transientTime.setColumns(10);
+		panel_1.add(transientTime);
 		
 		panel_1.add(btnNewButton);
 		
@@ -349,6 +359,14 @@ public class SimulatorView {
 		frame.getContentPane().setLayout(groupLayout);
 	}
 	
+	public JTextField getTransientTime() {
+		return transientTime;
+	}
+
+	public void setTransientTime(JTextField transientTime) {
+		this.transientTime = transientTime;
+	}
+
 	public JTextField getServerCI() {
 		return serverCI;
 	}
