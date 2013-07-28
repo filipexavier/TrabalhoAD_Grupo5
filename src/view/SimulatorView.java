@@ -96,7 +96,7 @@ public class SimulatorView {
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 1224, 560);
+		frame.setBounds(100, 100, 1224, 1560);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		XYSeriesCollection dataset = new XYSeriesCollection();				
@@ -126,21 +126,14 @@ public class SimulatorView {
 				.addGroup(groupLayout.createSequentialGroup()
 					.addContainerGap()
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
-							.addGroup(groupLayout.createSequentialGroup()
-								.addComponent(chartPanel, GroupLayout.DEFAULT_SIZE, 1212, Short.MAX_VALUE)
-								.addContainerGap())
-							.addGroup(groupLayout.createSequentialGroup()
-								.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
-									.addComponent(panel_2, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 1212, Short.MAX_VALUE)
-									.addComponent(panel, GroupLayout.DEFAULT_SIZE, 1212, Short.MAX_VALUE))
-								.addContainerGap()))
+						.addComponent(chartPanel, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 1212, Short.MAX_VALUE)
+						.addComponent(panel_1, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 714, GroupLayout.PREFERRED_SIZE)
+						.addComponent(panel_2, GroupLayout.DEFAULT_SIZE, 1212, Short.MAX_VALUE)
+						.addComponent(panel, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 1212, Short.MAX_VALUE)
 						.addGroup(Alignment.TRAILING, groupLayout.createSequentialGroup()
 							.addComponent(lblTaxasEmMbps)
-							.addGap(492))
-						.addGroup(groupLayout.createSequentialGroup()
-							.addComponent(panel_1, GroupLayout.PREFERRED_SIZE, 714, GroupLayout.PREFERRED_SIZE)
-							.addContainerGap())))
+							.addGap(486)))
+					.addContainerGap())
 		);
 		groupLayout.setVerticalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
@@ -148,14 +141,14 @@ public class SimulatorView {
 					.addContainerGap()
 					.addComponent(panel_1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(chartPanel, GroupLayout.PREFERRED_SIZE, 307, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addComponent(chartPanel, GroupLayout.DEFAULT_SIZE, 363, Short.MAX_VALUE)
+					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(lblTaxasEmMbps)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(panel, GroupLayout.PREFERRED_SIZE, 46, GroupLayout.PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(panel_2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-					.addContainerGap(62, Short.MAX_VALUE))
+					.addContainerGap())
 		);
 		
 		JLabel lblNewLabel_3 = new JLabel("IC servidor:");
