@@ -63,13 +63,14 @@ public class Server implements Listener {
 		Simulator.registerListener(EventType.SACK, this);
 		
 		lastAck = 0;
-		realReturnTime = (float) 0;
 		nextPackage = 0;
 
 		numOfPackagesToSend = 1;
 		
 		deviationReturnTime = 0d;
 		expectedReturnTime = 2d*group.getBroadcastDelay();
+		realReturnTime = new Float(expectedReturnTime);
+
 	}
 	
 	public void startServer() {
@@ -171,9 +172,6 @@ public class Server implements Listener {
 					duplicatedAcks.put(acks, null);
 					
 					threshold = (float) Math.floor(cwnd/2);
-					if(threshold < Simulator.maximumSegmentSize) {
-						throw new RuntimeException("threshold < Simulator.maximumSegmentSize");
-					}
 					
 					cwnd = (float) (threshold + 3.0*Simulator.maximumSegmentSize);
 					
@@ -189,10 +187,7 @@ public class Server implements Listener {
 				}else if(cwnd < threshold) {
 					this.cwnd += Simulator.maximumSegmentSize;
 				} else{
-					Integer numAcks = (int) Math.floor(this.cwnd/Simulator.maximumSegmentSize);
-					if(numAcks == 0) {
-						throw new RuntimeException("cwnd = 0");
-					}
+					Float numAcks = this.cwnd/Simulator.maximumSegmentSize*1.0f;
 					this.cwnd += Simulator.maximumSegmentSize/numAcks;
 				}
 				
@@ -262,9 +257,6 @@ public class Server implements Listener {
 		if (((Server)event.getSender()) == this) {
 			
 			threshold = (float) Math.floor(cwnd/2);
-			if(threshold < Simulator.maximumSegmentSize) {
-				throw new RuntimeException("threshold < Simulator.maximumSegmentSize");
-			}
 			
 			cwnd = new Float(Simulator.maximumSegmentSize);
 			restartSend((Integer) event.getValue(), event.getTime());
@@ -307,5 +299,4 @@ public class Server implements Listener {
 	public String toString() {
 		return "Servidor "+serverId;
 	}
-	
 }
