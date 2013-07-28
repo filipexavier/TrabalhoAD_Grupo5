@@ -10,8 +10,9 @@ import models.Event;
 public interface Listener {
 
 	/**
+	 * Método a ser implementado que irá manipular os eventos recebidos pelo por esse <code>Listener</code>.
 	 * 
-	 * @param event
+	 * @param event evento a ser tratado.
 	 */
 	public void listen(Event event);
 }

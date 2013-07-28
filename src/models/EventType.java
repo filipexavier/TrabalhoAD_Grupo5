@@ -3,6 +3,7 @@ package models;
 /**
  * 
  * Conjunto dos tipos de eventos que serão simulados ...
+ * TODO: Detalhar os eventos
  *
  */
 public enum EventType {

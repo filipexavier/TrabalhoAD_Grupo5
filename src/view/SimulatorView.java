@@ -27,6 +27,10 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import controller.Simulator;
+import javax.swing.JSeparator;
+import java.awt.Component;
+import javax.swing.Box;
+import java.awt.Dimension;
 
 public class SimulatorView {
 
@@ -66,6 +70,12 @@ public class SimulatorView {
 	private JTextField routerCI;
 	private JTextField receiverCI;
 	private JTextField numOfRuns;
+	private JTextField textField;
+	private JTextField textField_1;
+	private JTextField textField_2;
+	private JTextField textField_3;
+	private JTextField textField_4;
+	private JTextField textField_5;
 	
 	public static SimulatorView getInstance() {
 		if (instance == null) {
@@ -96,7 +106,7 @@ public class SimulatorView {
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 1224, 560);
+		frame.setBounds(100, 100, 1223, 727);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		XYSeriesCollection dataset = new XYSeriesCollection();				
@@ -117,45 +127,142 @@ public class SimulatorView {
 		JLabel lblTaxasEmMbps = new JLabel("Taxas em Pacotes por segundo");
 		
 		JPanel panel_1 = new JPanel();
+		FlowLayout flowLayout_2 = (FlowLayout) panel_1.getLayout();
+		flowLayout_2.setAlignment(FlowLayout.LEFT);
 		
 		JPanel panel_2 = new JPanel();
+		FlowLayout flowLayout = (FlowLayout) panel_2.getLayout();
+		flowLayout.setAlignment(FlowLayout.LEFT);
+		
+		JLabel lblNewLabel_6 = new JLabel("Grupo 2");
+		
+		JSeparator separator = new JSeparator();
+		
+		JPanel panel_3 = new JPanel();
+		panel_3.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+		
+		JLabel label = new JLabel("Taxa saída servidor\n");
+		panel_3.add(label);
+		
+		textField = new JTextField();
+		textField.setEditable(false);
+		textField.setColumns(10);
+		panel_3.add(textField);
+		
+		JLabel label_1 = new JLabel("Taxa saída do roteador");
+		panel_3.add(label_1);
+		
+		textField_1 = new JTextField();
+		textField_1.setEditable(false);
+		textField_1.setColumns(10);
+		panel_3.add(textField_1);
+		
+		JLabel label_2 = new JLabel("Taxa chegada do servidor");
+		panel_3.add(label_2);
+		
+		textField_2 = new JTextField();
+		textField_2.setEditable(false);
+		textField_2.setColumns(10);
+		panel_3.add(textField_2);
+		
+		JPanel panel_4 = new JPanel();
+		FlowLayout flowLayout_1 = (FlowLayout) panel_4.getLayout();
+		flowLayout_1.setAlignment(FlowLayout.LEFT);
+		
+		JLabel label_3 = new JLabel("IC servidor:");
+		panel_4.add(label_3);
+		
+		textField_3 = new JTextField();
+		textField_3.setEditable(false);
+		textField_3.setColumns(20);
+		panel_4.add(textField_3);
+		
+		JLabel label_4 = new JLabel("IC roteador:");
+		panel_4.add(label_4);
+		
+		textField_4 = new JTextField();
+		textField_4.setEditable(false);
+		textField_4.setColumns(20);
+		panel_4.add(textField_4);
+		
+		JLabel lblIcReceptor = new JLabel("IC receptor:");
+		panel_4.add(lblIcReceptor);
+		
+		textField_5 = new JTextField();
+		textField_5.setEditable(false);
+		textField_5.setColumns(20);
+		panel_4.add(textField_5);
+		
+		JLabel lblGrupo = new JLabel("Grupo 1");
+		
+		JSeparator separator_2 = new JSeparator();
+		
+		JSeparator separator_1 = new JSeparator();
 		
 		GroupLayout groupLayout = new GroupLayout(frame.getContentPane());
 		groupLayout.setHorizontalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(groupLayout.createSequentialGroup()
-					.addContainerGap()
-					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+					.addGap(25)
+					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
 						.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
 							.addGroup(groupLayout.createSequentialGroup()
-								.addComponent(chartPanel, GroupLayout.DEFAULT_SIZE, 1212, Short.MAX_VALUE)
-								.addContainerGap())
-							.addGroup(groupLayout.createSequentialGroup()
-								.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
-									.addComponent(panel_2, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 1212, Short.MAX_VALUE)
-									.addComponent(panel, GroupLayout.DEFAULT_SIZE, 1212, Short.MAX_VALUE))
-								.addContainerGap()))
-						.addGroup(Alignment.TRAILING, groupLayout.createSequentialGroup()
-							.addComponent(lblTaxasEmMbps)
-							.addGap(492))
+								.addComponent(separator, GroupLayout.PREFERRED_SIZE, 1, GroupLayout.PREFERRED_SIZE)
+								.addGap(202)
+								.addComponent(lblTaxasEmMbps)
+								.addGap(492))
+							.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+								.addGroup(groupLayout.createSequentialGroup()
+									.addComponent(lblGrupo)
+									.addGap(18)
+									.addComponent(separator_2, GroupLayout.PREFERRED_SIZE, 1084, GroupLayout.PREFERRED_SIZE))
+								.addComponent(chartPanel, GroupLayout.PREFERRED_SIZE, 1174, GroupLayout.PREFERRED_SIZE)
+								.addComponent(panel_1, GroupLayout.PREFERRED_SIZE, 770, GroupLayout.PREFERRED_SIZE)))
 						.addGroup(groupLayout.createSequentialGroup()
-							.addComponent(panel_1, GroupLayout.PREFERRED_SIZE, 714, GroupLayout.PREFERRED_SIZE)
-							.addContainerGap())))
+							.addComponent(lblNewLabel_6)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
+								.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+									.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false)
+										.addComponent(panel_2, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 1100, Short.MAX_VALUE)
+										.addComponent(panel, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 1100, GroupLayout.PREFERRED_SIZE))
+									.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false)
+										.addComponent(panel_4, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+										.addComponent(panel_3, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 1100, GroupLayout.PREFERRED_SIZE)))
+								.addComponent(separator_1, GroupLayout.PREFERRED_SIZE, 1084, GroupLayout.PREFERRED_SIZE))))
+					.addGap(98))
 		);
 		groupLayout.setVerticalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(groupLayout.createSequentialGroup()
-					.addContainerGap()
+					.addGap(12)
 					.addComponent(panel_1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(chartPanel, GroupLayout.PREFERRED_SIZE, 307, GroupLayout.PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addComponent(lblTaxasEmMbps)
+					.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
+						.addComponent(lblTaxasEmMbps)
+						.addComponent(separator, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addGap(13)
+					.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
+						.addComponent(lblGrupo)
+						.addComponent(separator_2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
+						.addGroup(groupLayout.createSequentialGroup()
+							.addGap(136)
+							.addComponent(lblNewLabel_6))
+						.addGroup(groupLayout.createSequentialGroup()
+							.addPreferredGap(ComponentPlacement.UNRELATED)
+							.addComponent(panel, GroupLayout.PREFERRED_SIZE, 46, GroupLayout.PREFERRED_SIZE)
+							.addPreferredGap(ComponentPlacement.UNRELATED)
+							.addComponent(panel_2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+							.addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(separator_1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+					.addGap(10)
+					.addComponent(panel_3, GroupLayout.PREFERRED_SIZE, 46, GroupLayout.PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(panel, GroupLayout.PREFERRED_SIZE, 46, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(panel_2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-					.addContainerGap(62, Short.MAX_VALUE))
+					.addComponent(panel_4, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
+					.addGap(32))
 		);
 		
 		JLabel lblNewLabel_3 = new JLabel("IC servidor:");
@@ -174,7 +281,7 @@ public class SimulatorView {
 		panel_2.add(routerCI);
 		routerCI.setColumns(20);
 		
-		JLabel lblNewLabel_5 = new JLabel("IC recepitor:");
+		JLabel lblNewLabel_5 = new JLabel("IC receptor:");
 		panel_2.add(lblNewLabel_5);
 		
 		receiverCI = new JTextField();
@@ -213,7 +320,7 @@ public class SimulatorView {
 		numOfRuns.setEditable(false);
 		panel_1.add(numOfRuns);
 		numOfRuns.setColumns(10);
-		panel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		panel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
 		
 		JLabel lblNewLabel = new JLabel("Taxa saída servidor\n");
 		panel.add(lblNewLabel);

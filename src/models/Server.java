@@ -12,10 +12,31 @@ import models.utils.ExponentialVariable;
 import models.utils.HighQualityRandom;
 import controller.Simulator;
 
-public class Server implements Listener{
+/**
+ * 
+ * Implementação da classe que representa uma estação TCP transmissora.
+ * <p>
+ * Sua função é simular uma estação transmissora de uma sessão TCP aberta, tendo, portanto, seu par receptor.
+ * O transmissor irá simular o envio de pacotes, obedecendo todo o protocolo TCP.
+ *
+ */
+public class Server implements Listener {
+	/**
+	 * Threshold com a qual o TCP está operando. Inicializado com o valor default 65535 bytes.
+	 */
 	private Integer threshold = 65535;
+	
+	/**
+	 * TODO: ??
+	 */
 	private Integer broadcastRate;
+	
+	// TODO: remover?
 	private ExponentialVariable rate;
+	
+	/**
+	 * 
+	 */
 	private ServerGroup group;
 	private Receiver receiver;
 	private Float cwnd, realReturnTime;

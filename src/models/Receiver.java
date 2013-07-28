@@ -10,10 +10,12 @@ import controller.Simulator;
 
 /**
  * 
- * Implementação da classe que representa uma estação receptora.
+ * Implementação da classe que representa uma estação TCP receptora.
+ * <p>
  * Sua função é simular uma estação recptora de uma sessão TCP aberta, tendo, portanto, seu par Transmissor.
- * O receptor será responsável por simular o recebimento de pacotes e então enviar o ACK correspondente.
+ * O receptor irá simular o recebimento de pacotes e então enviar o ACK correspondente.
  *
+ * @see Server
  */
 public class Receiver implements Listener {
 
