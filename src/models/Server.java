@@ -45,7 +45,7 @@ public class Server implements Listener {
 	private List<Integer> sendedPackages;
 	private Set<Integer> receivedAckPackages;
 	
-	public Server(Float rate) {}
+	public Server() {}
 	
 	public Server(Integer rate, ServerGroup group, Receiver receiver, Integer serverId) {
 		this.serverId = serverId;
