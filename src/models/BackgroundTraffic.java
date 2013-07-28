@@ -49,7 +49,7 @@ public class BackgroundTraffic extends Server{
 	public void startBackgroundTraffic() {
 		sendVariable = new ExponentialVariable(getAvgGustInterval());
 		gustLengthVariable = new GeometricVariable(getAvgGustLength());
-		float sampleValue = sendVariable.getSample().floatValue();
+		float sampleValue = (float) Math.ceil(sendVariable.getSample());
 		System.out.println("SendValue: " + sampleValue);
 		Simulator.shotEvent(EventType.SEND_PACKAGE, sampleValue, sampleValue,this, null);
 	}
@@ -72,7 +72,7 @@ public class BackgroundTraffic extends Server{
 				Simulator.shotEvent(EventType.PACKAGE_SENT, event.getTime(), event.getRtt(), this, nextPackage);
 				nextPackage += Simulator.maximumSegmentSize;
 			}
-			float sampleValue = sendVariable.getSample().floatValue();
+			int sampleValue = (int) Math.ceil(sendVariable.getSample());
 			System.out.println("SendValue: " + sampleValue);
 			Simulator.shotEvent(EventType.SEND_PACKAGE, event.getTime() + sampleValue, null, this, null);
 		}
