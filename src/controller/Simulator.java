@@ -56,8 +56,8 @@ public class Simulator {
 		listeners.get(eventType).add(listener);
 	}
 	
-	public static void shotEvent(EventType eventType, Float time, Object sender, Object value) {
-		Event event = new Event(eventType, time, sender, value);
+	public static void shotEvent(EventType eventType, Float time, Float rtt, Object sender, Object value) {
+		Event event = new Event(eventType, time, rtt,sender, value);
 		eventBuffer.add(event);
 		if (time > event.getTime()) {
 			throw new RuntimeException("Evento anterior adicionou um evento no passado");

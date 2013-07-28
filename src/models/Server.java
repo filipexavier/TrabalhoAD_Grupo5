@@ -40,7 +40,6 @@ public class Server implements Listener {
 	private Receiver receiver;
 	
 	private HashMap<Integer, Integer> duplicatedAcks;
-	private HashMap<Integer, Float> rttPerPackage;
 		
 	private List<Integer> sendedPackages;
 	private Set<Integer> receivedAckPackages;
@@ -54,7 +53,6 @@ public class Server implements Listener {
 		this.setReceiver(receiver);
 		fastRetransmit = false;
 		
-		rttPerPackage = new HashMap<Integer, Float>();
 		duplicatedAcks = new HashMap<Integer, Integer>();
 		sendedPackages = new ArrayList<Integer>();
 		receivedAckPackages = new HashSet<Integer>();
@@ -78,7 +76,7 @@ public class Server implements Listener {
 		cwnd = new Float(Simulator.maximumSegmentSize);		
 		
 		HighQualityRandom randomGenerator = new HighQualityRandom();
-		Simulator.shotEvent(EventType.SEND_PACKAGE, (float) randomGenerator.nextFloat()*100, this, null);
+		Simulator.shotEvent(EventType.SEND_PACKAGE, (float) randomGenerator.nextFloat()*100, null, this, null);
 	}
 	
 	@Override
@@ -106,8 +104,8 @@ public class Server implements Listener {
 			Float time = (float) (event.getTime() + (1000.0*Simulator.maximumSegmentSize)/broadcastRate);
 
 			Simulator.cancelEvent(EventType.TIME_OUT, this, nextPackage);
-			Simulator.shotEvent(EventType.SENDING_PACKAGE, time, this, nextPackage);
-			
+			Simulator.shotEvent(EventType.SENDING_PACKAGE, time, time, this, nextPackage);
+						
 			sendedPackages.add(nextPackage);			
 			nextPackage += Simulator.maximumSegmentSize;
 			
@@ -123,13 +121,12 @@ public class Server implements Listener {
 			
 			double timeOutTime = getTimeOutTime(event);
 
-			Simulator.shotEvent(EventType.TIME_OUT, (float) timeOutTime, this, event.getValue());
-			rttPerPackage.put((Integer) nextPackage, event.getTime());
+			Simulator.shotEvent(EventType.TIME_OUT, (float) timeOutTime, event.getRtt(), this, event.getValue());
 
-			Simulator.shotEvent(EventType.PACKAGE_SENT, event.getTime() + group.getBroadcastDelay(), this, event.getValue());
+			Simulator.shotEvent(EventType.PACKAGE_SENT, event.getTime() + group.getBroadcastDelay(), event.getRtt(), this, event.getValue());
 			
 			if(numOfPackagesToSend > 0) {
-				Simulator.shotEvent(EventType.SEND_PACKAGE, event.getTime(), this, null);
+				Simulator.shotEvent(EventType.SEND_PACKAGE, event.getTime(), null, this, null);
 			}	
 		}
 	}
@@ -139,6 +136,9 @@ public class Server implements Listener {
 		deviationReturnTime += 0.25*(Math.abs(differenceBetweenRealAndExpectation) - deviationReturnTime);
 		expectedReturnTime += 0.125*differenceBetweenRealAndExpectation;
 		double timeOutTime = expectedReturnTime + 4*deviationReturnTime;
+		if (timeOutTime < group.getBroadcastDelay()) {
+			throw new RuntimeException("Tempo do timeout calculado errado");
+		}
 		return timeOutTime + event.getTime();
 	}
 		
@@ -197,7 +197,7 @@ public class Server implements Listener {
 				updateBroadcastWindow(ackValue);
 				
 				numOfPackagesToSend = getNumberOfPackagesToSend();
-				Simulator.shotEvent(EventType.SEND_PACKAGE, event.getTime(), this, null);
+				Simulator.shotEvent(EventType.SEND_PACKAGE, event.getTime(), event.getRtt(), this, null);
 			}
 		}
 	}
@@ -222,9 +222,9 @@ public class Server implements Listener {
 	}
 
 	private void calcRealTime(Event event) {
-		if (rttPerPackage.get(lastAck) != null) {
-			realReturnTime = event.getTime() - rttPerPackage.get(lastAck);
-			rttPerPackage.remove(lastAck);
+		realReturnTime = event.getTime() - event.getRtt();
+		if (realReturnTime < group.getBroadcastDelay()) {
+			throw new RuntimeException("Tempo real de retorno menor que o delay");
 		}
 	}
 
@@ -242,7 +242,8 @@ public class Server implements Listener {
 		sendedPackages.removeAll(removedPackges);
 		this.nextPackage = nextPackage;
 		numOfPackagesToSend = getNumberOfPackagesToSend();
-		Simulator.shotEvent(EventType.SEND_PACKAGE, time, this, null);
+		
+		Simulator.shotEvent(EventType.SEND_PACKAGE, time, null, this, null);
 	}
 
 	private int getNumberOfPackagesToSend() {

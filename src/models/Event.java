@@ -30,6 +30,8 @@ public class Event implements Comparable<Event>{
 	private Object value; // pacote (TIMEOUT, ACK)
 	//TODO: Acho que tem que criar outro value, pra guardar as listas do SACK
 
+	private Float rtt;
+
 	/**
 	 * 
 	 * Construtor padrão que recebe todas os atributos necessários para representar um evento, inicializando as variáveis correspondentes.
@@ -39,11 +41,12 @@ public class Event implements Comparable<Event>{
 	 * @param sender quem enviou o evento
 	 * @param value informação referente ao evento
 	 */
-	public Event(EventType eventType, Float time, Object sender, Object value) {
+	public Event(EventType eventType, Float time, Float rtt, Object sender, Object value) {
 		this.type = eventType;
 		this.time = time;
 		this.sender = sender;
 		this.value = value;
+		this.setRtt(rtt);
 	}
 
 	/**
@@ -126,5 +129,13 @@ public class Event implements Comparable<Event>{
 	@Override
 	public String toString() {
 		return "<Tipo: "+type+" Tempo: "+time+" Sender: "+sender+" Valor: "+value+">";
+	}
+
+	public Float getRtt() {
+		return rtt;
+	}
+
+	public void setRtt(Float rtt) {
+		this.rtt = rtt;
 	}	
 }

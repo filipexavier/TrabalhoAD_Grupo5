@@ -212,7 +212,7 @@ public class Router implements Listener {
 			buffer.add(event);
 		}else {
 			onService = true;
-			Simulator.shotEvent(EventType.DELIVER_PACKAGE, event.getTime(), this, event);
+			Simulator.shotEvent(EventType.DELIVER_PACKAGE, event.getTime(), event.getRtt(), this, event);
 		}
 	}
 
@@ -233,7 +233,7 @@ public class Router implements Listener {
 	private void listenDeliverPackage(Event event) {
 		Float time = (float) (event.getTime() + (1000.0*Simulator.maximumSegmentSize)/rate);
 		Event serverEvent = (Event) event.getValue();
-		Simulator.shotEvent(EventType.PACKAGE_DELIVERED, time, serverEvent.getSender(), serverEvent.getValue());
+		Simulator.shotEvent(EventType.PACKAGE_DELIVERED, time, serverEvent.getRtt(), serverEvent.getSender(), serverEvent.getValue());
 	}
 
 	/**
@@ -254,7 +254,8 @@ public class Router implements Listener {
 			onService = false;
 			lastBusyPeriodTime = event.getTime();
 		} else {
-			Simulator.shotEvent(EventType.DELIVER_PACKAGE, event.getTime(), this, buffer.remove(0));
+			Event nextEvent = buffer.remove(0);
+			Simulator.shotEvent(EventType.DELIVER_PACKAGE, event.getTime(), nextEvent.getRtt(), this, nextEvent);
 		}
 	}
 
