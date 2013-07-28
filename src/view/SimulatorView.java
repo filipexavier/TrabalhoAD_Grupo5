@@ -406,7 +406,7 @@ public class SimulatorView {
 		plot.setDataset(dataset);
 	}
 
-	public void updateChart(HashMap<Server, HashMap<Float, Integer>> series) {
+	public void updateChart(HashMap<Server, HashMap<Float, Integer>> series, HashMap<Float, Integer> bufferSize) {
 		JFreeChart chart = chartPanel.getChart();
 		XYPlot plot = (XYPlot) chart.getPlot();
 		
@@ -418,6 +418,11 @@ public class SimulatorView {
 			}
 			dataset.addSeries(serie);
 		}		
+		XYSeries buffer = new XYSeries("tamanho do buffer ");
+		for(Entry<Float, Integer> entry: bufferSize.entrySet() ){
+			buffer.add(entry.getKey(), entry.getValue());
+		}
+		dataset.addSeries(buffer);
 	}
 	
 	public JTextField getSimulationTimeTextField() {

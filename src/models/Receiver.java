@@ -89,7 +89,7 @@ public class Receiver implements Listener {
 		List<Object> value = new ArrayList<Object>();
 		value.add(nextAck);
 		value.add(receivedPackages);
-		Simulator.shotEvent(EventType.SACK, event.getTime(), this, value);
+		Simulator.shotEvent(EventType.SACK, event.getTime(), event.getRtt(), this, value);
 	}
 
 	/**

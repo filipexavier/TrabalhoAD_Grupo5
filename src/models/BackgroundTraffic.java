@@ -27,10 +27,6 @@ public class BackgroundTraffic extends Server{
 	private Float avgGustLength;
 	private Float avgGustInterval;
 	
-	private int gustLengthSum = 0;
-	private int gustIntervalSum = 0;
-	private int count = 1;
-	
 	/**
 	 * Constrói um tráfego de fundo com a taxa fornecida. 
 	 * <p>
@@ -55,7 +51,7 @@ public class BackgroundTraffic extends Server{
 		gustLengthVariable = new GeometricVariable(getAvgGustLength());
 		float sampleValue = (float) Math.ceil(sendVariable.getSample());
 		System.out.println("SendValue: " + sampleValue);
-		Simulator.shotEvent(EventType.SEND_PACKAGE, sampleValue, this, null);
+		Simulator.shotEvent(EventType.SEND_PACKAGE, sampleValue, sampleValue,this, null);
 	}
 
 	/**
@@ -71,17 +67,14 @@ public class BackgroundTraffic extends Server{
 	public void listen(Event event) {
 		if (event.getSender().equals(this)) {
 			Integer gustLength = (int) Math.ceil(gustLengthVariable.getSample());
-			gustLengthSum += gustLength;
-			System.out.println("AvgGustLength: " + gustLengthSum/count);
-			for (int i = 0; i < 10; i++) {
-				Simulator.shotEvent(EventType.PACKAGE_SENT, event.getTime(), this, nextPackage);
+			System.out.println("GustLength: " + gustLength);
+			for (int i = 0; i < gustLength; i++) {
+				Simulator.shotEvent(EventType.PACKAGE_SENT, event.getTime(), event.getRtt(), this, nextPackage);
 				nextPackage += Simulator.maximumSegmentSize;
 			}
 			int sampleValue = (int) Math.ceil(sendVariable.getSample());
-			gustIntervalSum += sampleValue;
-			System.out.println("AvgSendValue: " + gustIntervalSum/count);
-			Simulator.shotEvent(EventType.SEND_PACKAGE, event.getTime() + sampleValue, this, null);
-			count++;
+			System.out.println("SendValue: " + sampleValue);
+			Simulator.shotEvent(EventType.SEND_PACKAGE, event.getTime() + sampleValue, null, this, null);
 		}
 	}
 
