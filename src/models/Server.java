@@ -161,7 +161,7 @@ public class Server implements Listener {
 					Simulator.cancelEvent(EventType.TIME_OUT, this, packageSequence);
 				}
 				Integer acks = duplicatedAcks.get(ackValue);
-				duplicatedAcks.put(acks, ++acks);				
+				duplicatedAcks.put(ackValue, ++acks);				
 				
 				if(fastRetransmit) {
 					this.cwnd += Simulator.maximumSegmentSize;
@@ -188,7 +188,7 @@ public class Server implements Listener {
 					this.cwnd += Simulator.maximumSegmentSize/numAcks;
 				}
 				
-				duplicatedAcks.put(lastAck, null);
+				duplicatedAcks.remove(lastAck);
 				duplicatedAcks.put(ackValue, 0);
 				Simulator.cancelEvent(EventType.TIME_OUT, this, lastAck);
 				sendedPackages.remove(lastAck);
