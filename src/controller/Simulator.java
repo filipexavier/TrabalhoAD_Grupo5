@@ -11,7 +11,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import models.BackgroundTraffic;
@@ -27,7 +26,11 @@ import models.utils.ConfidenceInterval;
 import view.SimulatorView;
 
 
-
+/**
+ * 
+ * 
+ *
+ */
 public class Simulator {
 
 	public static List<ServerGroup> serverGroups;

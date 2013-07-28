@@ -34,7 +34,7 @@ public class ConfidenceInterval {
 	}
 	
 	public static double getPrecision(List<Double> data) {
-		if (data.size() > 30) {
+		if (data.size() >= 30) {
 			return 100*1.645*getDeviation(data)/(getAvarege(data)*Math.sqrt(data.size()));
 		}
 		return 0;

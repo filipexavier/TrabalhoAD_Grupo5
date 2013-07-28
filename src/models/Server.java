@@ -12,10 +12,31 @@ import models.utils.ExponentialVariable;
 import models.utils.HighQualityRandom;
 import controller.Simulator;
 
-public class Server implements Listener{
+/**
+ * 
+ * Implementação da classe que representa uma estação TCP transmissora.
+ * <p>
+ * Sua função é simular uma estação transmissora de uma sessão TCP aberta, tendo, portanto, seu par receptor.
+ * O transmissor irá simular o envio de pacotes, obedecendo todo o protocolo TCP.
+ *
+ */
+public class Server implements Listener {
+	/**
+	 * Threshold com a qual o TCP está operando. Inicializado com o valor default 65535 bytes.
+	 */
 	private Integer threshold = 65535;
+	
+	/**
+	 * TODO: ??
+	 */
 	private Integer broadcastRate;
+	
+	// TODO: remover?
 	private ExponentialVariable rate;
+	
+	/**
+	 * 
+	 */
 	private ServerGroup group;
 	private Receiver receiver;
 	private Float cwnd, realReturnTime;
@@ -41,22 +62,25 @@ public class Server implements Listener{
 		this.broadcastRate = rate;
 		this.group = group;
 		this.setReceiver(receiver);
+		
 		sendedPackages = new ArrayList<Integer>();
 		receivedAckPackages = new HashSet<Integer>();
 		rttPerPackage = new HashMap<Integer, Float>();
+		duplicatedAcks = new HashMap<Integer, Integer>();
 		
 		Simulator.registerListener(EventType.SEND_PACKAGE, this);
 		Simulator.registerListener(EventType.SENDING_PACKAGE, this);
 		Simulator.registerListener(EventType.TIME_OUT, this);
 		Simulator.registerListener(EventType.SACK, this);
 		
-		duplicatedAcks = new HashMap<Integer, Integer>();
 		lastAck = 0;
 		deviationReturnTime = 0;
-		expectedReturnTime = 2*group.getBroadcastDelay();
 		realReturnTime = (float) 0;
-		numOfPackagesToSend = 1;
 		nextPackage = 0;
+
+		numOfPackagesToSend = 1;
+		
+		expectedReturnTime = 2*group.getBroadcastDelay();
 		this.serverId = serverId;
 	}
 	
@@ -144,10 +168,7 @@ public class Server implements Listener{
 			}
 			
 			if (lastAck != ackValue) {	
-				if (rttPerPackage.get(lastAck) != null) {
-					realReturnTime = event.getTime() - rttPerPackage.get(lastAck);
-					rttPerPackage.remove(lastAck);
-				}
+				calcRealTime(event);
 				
 				if(cwnd < threshold) {
 					this.cwnd += Simulator.maximumSegmentSize;
@@ -161,23 +182,8 @@ public class Server implements Listener{
 				Simulator.cancelEvent(EventType.TIME_OUT, this, lastAck);
 				sendedPackages.remove(lastAck);
 
-				lastAck = ackValue;
-				nextPackage = ackValue;
-				
-				List<Integer> removeReceivedPackages = new ArrayList<Integer>();				
-				for (Integer receivedPackage : receivedAckPackages) {
-					if (receivedPackage < ackValue) {
-						removeReceivedPackages.add(receivedPackage);
-					}else if(receivedPackage == ackValue) {
-						throw new RuntimeException("Ack já recebido");
-					}
-				}
-				receivedAckPackages.removeAll(removeReceivedPackages);
-				sendedPackages.removeAll(removeReceivedPackages);
-				
-				while(sendedPackages.contains(nextPackage)) {
-					nextPackage += Simulator.maximumSegmentSize;
-				}
+				lastAck = ackValue;				
+				updateBroadcastWindow(ackValue);
 				
 				numOfPackagesToSend = getNumberOfPackagesToSend();
 				Simulator.shotEvent(EventType.SEND_PACKAGE, event.getTime(), this, null);
@@ -197,6 +203,32 @@ public class Server implements Listener{
 					restartSend(acks, event.getTime());
 				}
 			}
+		}
+	}
+
+	private void updateBroadcastWindow(Integer ackValue) {
+		nextPackage = ackValue;
+		
+		List<Integer> removeReceivedPackages = new ArrayList<Integer>();						
+		for (Integer receivedPackage : receivedAckPackages) {
+			if (receivedPackage < ackValue) {
+				removeReceivedPackages.add(receivedPackage);
+			}else if(receivedPackage == ackValue) {
+				throw new RuntimeException("Ack já recebido");
+			}
+		}
+		receivedAckPackages.removeAll(removeReceivedPackages);
+		sendedPackages.removeAll(removeReceivedPackages);
+		
+		while(sendedPackages.contains(nextPackage)) {
+			nextPackage += Simulator.maximumSegmentSize;
+		}
+	}
+
+	private void calcRealTime(Event event) {
+		if (rttPerPackage.get(lastAck) != null) {
+			realReturnTime = event.getTime() - rttPerPackage.get(lastAck);
+			rttPerPackage.remove(lastAck);
 		}
 	}
 
