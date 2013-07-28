@@ -1,6 +1,7 @@
 package models;
 
 import models.utils.ExponentialVariable;
+import models.utils.GeometricVariable;
 import controller.Simulator;
 
 /**
@@ -17,17 +18,14 @@ import controller.Simulator;
 public class BackgroundTraffic extends Server{
 	
 	/**
-	 * Taxa com a qual ocorre o tráfego de fundo.
-	 */
-	private Float rate;
-	
-	/**
 	 * Armazena o próximo pacote a ser enviado.
 	 */
 	private Integer nextPackage;
 	
-	// TODO: remover?
 	private ExponentialVariable sendVariable;
+	private GeometricVariable gustLengthVariable;
+	private Float avgGustLength;
+	private Float avgGustInterval;
 	
 	/**
 	 * Constrói um tráfego de fundo com a taxa fornecida. 
@@ -36,11 +34,11 @@ public class BackgroundTraffic extends Server{
 	 * 
 	 * @param rate taxa em que ocorre o tráfego de fundo.
 	 */
-	public BackgroundTraffic(Float rate) {
-		super(rate);
+	public BackgroundTraffic(Float avgGustLength, Float avgGustInterval) {
 		Simulator.registerListener(EventType.SEND_PACKAGE, this);
-		this.rate = rate;
 		nextPackage = 0;
+		this.avgGustLength = avgGustLength;
+		this.avgGustInterval = avgGustInterval;
 	}	
 	
 	/**
@@ -49,8 +47,11 @@ public class BackgroundTraffic extends Server{
 	 * Este evento será tratado pelo próprio tráfego, que irá então enviar os seus pacotes.
 	 */
 	public void startBackgroundTraffic() {
-		sendVariable = new ExponentialVariable(rate/(1000*Simulator.maximumSegmentSize));
-		Simulator.shotEvent(EventType.SEND_PACKAGE, (float) 24, this, null);
+		sendVariable = new ExponentialVariable(getAvgGustInterval());
+		gustLengthVariable = new GeometricVariable(getAvgGustLength());
+		float sampleValue = sendVariable.getSample().floatValue();
+		System.out.println("SendValue: " + sampleValue);
+		Simulator.shotEvent(EventType.SEND_PACKAGE, sampleValue, this, null);
 	}
 
 	/**
@@ -65,19 +66,23 @@ public class BackgroundTraffic extends Server{
 	@Override
 	public void listen(Event event) {
 		if (event.getSender().equals(this)) {
+			Integer gustLength = (int) Math.ceil(gustLengthVariable.getSample());
+			System.out.println("GustLength: " + gustLength);
 			for (int i = 0; i < 10; i++) {
 				Simulator.shotEvent(EventType.PACKAGE_SENT, event.getTime(), this, nextPackage);
 				nextPackage += Simulator.maximumSegmentSize;
 			}
-			Simulator.shotEvent(EventType.SEND_PACKAGE, event.getTime() + 24, this, null);
+			float sampleValue = sendVariable.getSample().floatValue();
+			System.out.println("SendValue: " + sampleValue);
+			Simulator.shotEvent(EventType.SEND_PACKAGE, event.getTime() + sampleValue, this, null);
 		}
 	}
 
-	/**
-	 * Retorna a taxa com que o tráfego de fundo está ocorrendo.
-	 * @return taxa de ocorrência do tráfego de fundo.
-	 */
-	public Float getRate() {
-		return rate;
+	public Float getAvgGustLength() {
+		return avgGustLength;
+	}
+
+	public Float getAvgGustInterval() {
+		return avgGustInterval;
 	}
 }

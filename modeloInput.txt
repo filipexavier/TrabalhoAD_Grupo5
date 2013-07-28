@@ -5,7 +5,8 @@ Atraso de propagação do grupo 1 (ms)
 Número de servidores do grupo 1
 Atraso de propagação do grupo 2 (ms)
 Número de servidores do grupo 2
-Tráfego de fundo (bps)
+Tamanho médio das rajadas geométricas do Tráfego de fundo
+Intervalo médio entre chegadas das rajadas geométricas do Tráfego de fundo (ms)
 Tamanho do buffer (pacotes)
 MSS - Tamanho máximo do segmento (bits)
 Política de gargalo ( FIFO | RED )

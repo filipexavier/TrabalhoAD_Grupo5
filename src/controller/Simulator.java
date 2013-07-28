@@ -187,7 +187,8 @@ public class Simulator {
 	private static void printInputData() {
 		System.out.println("	================ LOG DADOS DO ARQUIVO =================");
 		System.out.println("	=======================================================\n");
-		System.out.println("		Tráfego de fundo: " + 8*backgroundTraffic.getRate() + " bps");
+		System.out.println("		Tamanho médio das rajadas do tráfego de fundo: " + backgroundTraffic.getAvgGustLength());
+		System.out.println("		Intervalo médio entre rajadas do tráfego de fundo: " + backgroundTraffic.getAvgGustInterval() + " ms");
 		System.out.println("		Tamanho do buffer: " + router.getBufferSize() + " pacotes");
 		System.out.println("		MSS: " + (maximumSegmentSize) + " bytes");
 		System.out.println("		Política de atendimento: " + router.getBottleNeckPolicy());
@@ -253,7 +254,10 @@ public class Simulator {
 
 		//Ler tráfego de fundo
 		line = reader.readLine();
-		backgroundTraffic = new BackgroundTraffic(Float.parseFloat(line)/8);
+		Float avgGustLength = Float.parseFloat(line);
+		line = reader.readLine();
+		Float avgGustInterval = Float.parseFloat(line);
+		backgroundTraffic = new BackgroundTraffic(avgGustLength, 1/avgGustInterval);
 		
 		//Ler tamanho do buffer
 		line = reader.readLine();
