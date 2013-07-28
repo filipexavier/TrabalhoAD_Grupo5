@@ -45,12 +45,13 @@ public class Simulator {
 	public static Integer serverId;
 	
 	public static HashMap<Server, HashMap<Float, Integer>> series;
+	public static HashMap<Float, Integer> bufferSize;
 	public static Integer serverBroadcast   = 0;
-	public static List<Double> serverAvarages = new ArrayList<Double>();
+	public static List<Double> serverAverages = new ArrayList<Double>();
 	public static Integer routerBroadcast   = 0;
-	public static List<Double> routerAvarages = new ArrayList<Double>();
+	public static List<Double> routerAverages = new ArrayList<Double>();
 	public static Integer receiverBroadcast = 0;
-	public static List<Double> receiverAvarages = new ArrayList<Double>();
+	public static List<Double> receiverAverages = new ArrayList<Double>();
 	
 	public static void registerListener(EventType eventType, Listener listener) {
 		listeners.get(eventType).add(listener);
@@ -81,6 +82,7 @@ public class Simulator {
 		eventBuffer = new ArrayList<Event>();
 		listeners = new HashMap<EventType, Set<Listener>>();
 		series = new HashMap<Server, HashMap<Float, Integer>>();
+		bufferSize = new HashMap<Float, Integer>();
 		
 		for(EventType type: EventType.values()){
 			listeners.put( type, new HashSet<Listener>() );
@@ -131,22 +133,22 @@ public class Simulator {
 	}
 
 	private static void updateChart() {
-		SimulatorView.getInstance().updateChart(series);
+		SimulatorView.getInstance().updateChart(series, bufferSize);
 	}
 
 	private static void updateIntervalConfidence() {
-		serverAvarages.add(new Double(SimulatorView.getInstance().getServerBroadcast().getText()));
-		receiverAvarages.add(new Double(SimulatorView.getInstance().getReceiverBroadcast().getText()));
-		routerAvarages.add(new Double(SimulatorView.getInstance().getRouteBroadcast().getText()));
+		serverAverages.add(new Double(SimulatorView.getInstance().getServerBroadcast().getText()));
+		receiverAverages.add(new Double(SimulatorView.getInstance().getReceiverBroadcast().getText()));
+		routerAverages.add(new Double(SimulatorView.getInstance().getRouteBroadcast().getText()));
 		
-		Integer numberOsRuns = serverAvarages.size();
+		Integer numberOsRuns = serverAverages.size();
 		
 		SimulatorView.getInstance().getNumOfRuns().setText(numberOsRuns.toString());
 		
 		if (numberOsRuns >= 2) {
-			SimulatorView.getInstance().getServerCI().setText(ConfidenceInterval.getConfidenceInterval(serverAvarages));
-			SimulatorView.getInstance().getReceiverCI().setText(ConfidenceInterval.getConfidenceInterval(receiverAvarages));
-			SimulatorView.getInstance().getRouterCI().setText(ConfidenceInterval.getConfidenceInterval(routerAvarages));
+			SimulatorView.getInstance().getServerCI().setText(ConfidenceInterval.getConfidenceInterval(serverAverages));
+			SimulatorView.getInstance().getReceiverCI().setText(ConfidenceInterval.getConfidenceInterval(receiverAverages));
+			SimulatorView.getInstance().getRouterCI().setText(ConfidenceInterval.getConfidenceInterval(routerAverages));
 		}
 	}
 
@@ -182,6 +184,8 @@ public class Simulator {
 				value = 0;
 			}
 		}			
+		//Adiciona o tamanho do buffer no tempo atual para aparecer no gráfico
+		bufferSize.put(time, router.getBuffer().size());
 	}
 
 	private static void printInputData() {

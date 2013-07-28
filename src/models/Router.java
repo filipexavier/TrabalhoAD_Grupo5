@@ -307,4 +307,12 @@ public class Router implements Listener {
 	public void setBufferSize(Integer bufferSize) {
 		this.bufferSize = bufferSize;
 	}
+
+	public List<Event> getBuffer() {
+		return buffer;
+	}
+
+	public void setBuffer(List<Event> buffer) {
+		this.buffer = buffer;
+	}
 }
