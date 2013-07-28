@@ -4,11 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import models.interfaces.Listener;
-import models.utils.ExponentialVariable;
 import models.utils.HighQualityRandom;
 import controller.Simulator;
 
@@ -24,47 +22,42 @@ public class Server implements Listener {
 	/**
 	 * Threshold com a qual o TCP está operando. Inicializado com o valor default 65535 bytes.
 	 */
-	private Integer threshold = 65535;
-	
-	/**
-	 * TODO: ??
-	 */
+	private Boolean fastRetransmit;
+	private Integer serverId;
+	private Float threshold = 65535f;
 	private Integer broadcastRate;
+	private Integer lastAck;
+	private Integer nextPackage;
+	private Integer numOfPackagesToSend;
+
+	private Float cwnd;
+	private Float realReturnTime;
 	
-	// TODO: remover?
-	private ExponentialVariable rate;
+	private Double expectedReturnTime;
+	private Double deviationReturnTime;
 	
-	/**
-	 * 
-	 */
 	private ServerGroup group;
 	private Receiver receiver;
-	private Float cwnd, realReturnTime;
-	private Integer serverId;
 	
-	
-	private Integer lastAck, nextPackage, numOfPackagesToSend;
-	private Map<Integer, Integer> duplicatedAcks;
-		
-	double expectedReturnTime;
-	double deviationReturnTime;
+	private HashMap<Integer, Integer> duplicatedAcks;
 	private HashMap<Integer, Float> rttPerPackage;
+		
+	private List<Integer> sendedPackages;
+	private Set<Integer> receivedAckPackages;
 	
-	
-	List<Integer> sendedPackages;
-	Set<Integer> receivedAckPackages;
-
 	public Server(Float rate) {}
 	
 	public Server(Integer rate, ServerGroup group, Receiver receiver, Integer serverId) {
+		this.serverId = serverId;
 		this.broadcastRate = rate;
 		this.group = group;
 		this.setReceiver(receiver);
+		fastRetransmit = false;
 		
-		sendedPackages = new ArrayList<Integer>();
-		receivedAckPackages = new HashSet<Integer>();
 		rttPerPackage = new HashMap<Integer, Float>();
 		duplicatedAcks = new HashMap<Integer, Integer>();
+		sendedPackages = new ArrayList<Integer>();
+		receivedAckPackages = new HashSet<Integer>();
 		
 		Simulator.registerListener(EventType.SEND_PACKAGE, this);
 		Simulator.registerListener(EventType.SENDING_PACKAGE, this);
@@ -72,23 +65,19 @@ public class Server implements Listener {
 		Simulator.registerListener(EventType.SACK, this);
 		
 		lastAck = 0;
-		deviationReturnTime = 0;
 		realReturnTime = (float) 0;
 		nextPackage = 0;
 
 		numOfPackagesToSend = 1;
 		
-		expectedReturnTime = 2*group.getBroadcastDelay();
-		this.serverId = serverId;
+		deviationReturnTime = 0d;
+		expectedReturnTime = 2d*group.getBroadcastDelay();
 	}
 	
 	public void startServer() {
-		cwnd = new Float(Simulator.maximumSegmentSize);
-		this.rate = new ExponentialVariable(broadcastRate/(1000.0*Simulator.maximumSegmentSize));
+		cwnd = new Float(Simulator.maximumSegmentSize);		
 		
 		HighQualityRandom randomGenerator = new HighQualityRandom();
-		
-		
 		Simulator.shotEvent(EventType.SEND_PACKAGE, (float) randomGenerator.nextFloat()*100, this, null);
 	}
 	
@@ -113,14 +102,12 @@ public class Server implements Listener {
 	}
 	
 	private void listenSendPackage(Event event) {
-		if (((Server)event.getSender()).equals(this)) {
-			
+		if (((Server)event.getSender()).equals(this)) {			
 			Float time = (float) (event.getTime() + (1000.0*Simulator.maximumSegmentSize)/broadcastRate);
 
 			Simulator.cancelEvent(EventType.TIME_OUT, this, nextPackage);
 			Simulator.shotEvent(EventType.SENDING_PACKAGE, time, this, nextPackage);
 			
-			rttPerPackage.put((Integer) nextPackage, event.getTime());
 			sendedPackages.add(nextPackage);			
 			nextPackage += Simulator.maximumSegmentSize;
 			
@@ -135,7 +122,10 @@ public class Server implements Listener {
 		if (((Server)event.getSender()).equals(this)) {
 			
 			double timeOutTime = getTimeOutTime(event);
-			Simulator.shotEvent(EventType.TIME_OUT, (float) timeOutTime, this, event.getValue());			
+
+			Simulator.shotEvent(EventType.TIME_OUT, (float) timeOutTime, this, event.getValue());
+			rttPerPackage.put((Integer) nextPackage, event.getTime());
+
 			Simulator.shotEvent(EventType.PACKAGE_SENT, event.getTime() + group.getBroadcastDelay(), this, event.getValue());
 			
 			if(numOfPackagesToSend > 0) {
@@ -165,10 +155,33 @@ public class Server implements Listener {
 				throw new RuntimeException("Ack diminuindo");
 			}
 			
-			if (lastAck != ackValue) {	
+			if (lastAck == ackValue) {	
+				for (Integer packageSequence : packageSequences) {
+					receivedAckPackages.add(packageSequence);
+					Simulator.cancelEvent(EventType.TIME_OUT, this, packageSequence);
+				}
+				Integer acks = duplicatedAcks.get(ackValue);
+				duplicatedAcks.put(acks, ++acks);				
+				
+				if(fastRetransmit) {
+					this.cwnd += Simulator.maximumSegmentSize;
+				}
+				
+				if(acks == 3) {
+					duplicatedAcks.put(acks, null);
+					threshold = (float) Math.floor(cwnd/2);
+					cwnd = (float) (threshold + 3.0*Simulator.maximumSegmentSize);
+					
+					restartSend(acks, event.getTime());
+					fastRetransmit = true;
+				}
+			} else {
 				calcRealTime(event);
 				
-				if(cwnd < threshold) {
+				if(fastRetransmit) {
+					cwnd = threshold;
+					fastRetransmit = false;
+				}else if(cwnd < threshold) {
 					this.cwnd += Simulator.maximumSegmentSize;
 				} else{
 					Integer numAcks = (int) Math.floor(this.cwnd/Simulator.maximumSegmentSize);
@@ -185,21 +198,6 @@ public class Server implements Listener {
 				
 				numOfPackagesToSend = getNumberOfPackagesToSend();
 				Simulator.shotEvent(EventType.SEND_PACKAGE, event.getTime(), this, null);
-			} else {
-				for (Integer packageSequence : packageSequences) {
-					receivedAckPackages.add(packageSequence);
-					Simulator.cancelEvent(EventType.TIME_OUT, this, packageSequence);
-				}
-				Integer acks = duplicatedAcks.get(ackValue);
-				duplicatedAcks.put(acks, ++acks);				
-				
-				if(acks == 3) {
-					duplicatedAcks.put(acks, null);
-					threshold = (int) Math.floor(cwnd/2);
-					cwnd = (float) (threshold + 3.0*Simulator.maximumSegmentSize);
-					
-					restartSend(acks, event.getTime());
-				}
 			}
 		}
 	}
@@ -253,7 +251,7 @@ public class Server implements Listener {
 	
 	private void listenTimeOut(Event event) {
 		if (((Server)event.getSender()) == this) {
-			threshold = (int) Math.floor(cwnd/2);
+			threshold = (float) Math.floor(cwnd/2);
 			cwnd = new Float(Simulator.maximumSegmentSize);
 			restartSend((Integer) event.getValue(), event.getTime());
 		}
