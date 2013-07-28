@@ -41,23 +41,24 @@ public class Simulator {
 	public static Router router;
 	public static final String FILENAME = "simulador.txt";
 	
-	public static Float time = (float) 0;
+	public static Long time = 0l;
 	public static Integer serverId;
 	
-	public static HashMap<Server, HashMap<Float, Integer>> series;
-	public static HashMap<Float, Integer> bufferSize;
+	public static HashMap<Server, HashMap<Long, Integer>> series;
+	public static HashMap<Long, Integer> bufferSize;
 	public static Integer serverBroadcast   = 0;
-	public static List<Double> serverAverages = new ArrayList<Double>();
 	public static Integer routerBroadcast   = 0;
-	public static List<Double> routerAverages = new ArrayList<Double>();
 	public static Integer receiverBroadcast = 0;
+
+	public static List<Double> serverAverages = new ArrayList<Double>();
+	public static List<Double> routerAverages = new ArrayList<Double>();
 	public static List<Double> receiverAverages = new ArrayList<Double>();
 	
 	public static void registerListener(EventType eventType, Listener listener) {
 		listeners.get(eventType).add(listener);
 	}
 	
-	public static void shotEvent(EventType eventType, Float time, Float rtt, Object sender, Object value) {
+	public static void shotEvent(EventType eventType, Long time, Long rtt, Object sender, Object value) {
 		Event event = new Event(eventType, time, rtt,sender, value);
 		eventBuffer.add(event);
 		if (time > event.getTime()) {
@@ -81,8 +82,8 @@ public class Simulator {
 		serverId = 1;
 		eventBuffer = new ArrayList<Event>();
 		listeners = new HashMap<EventType, Set<Listener>>();
-		series = new HashMap<Server, HashMap<Float, Integer>>();
-		bufferSize = new HashMap<Float, Integer>();
+		series = new HashMap<Server, HashMap<Long, Integer>>();
+		bufferSize = new HashMap<Long, Integer>();
 		
 		for(EventType type: EventType.values()){
 			listeners.put( type, new HashSet<Listener>() );
@@ -92,14 +93,14 @@ public class Simulator {
 
 		Event event = null;
 		Integer simulationTime = Integer.parseInt(SimulatorView.getInstance().getSimulationTimeTextField().getText());
-		long realTime = System.currentTimeMillis();
-		while(eventBuffer.size() > 0 && (event == null || event.getTime() < simulationTime)){
+		long realTime = System.nanoTime();
+		while(eventBuffer.size() > 0 && (event == null || event.getTime() < simulationTime*1000000l)){
 			event = eventBuffer.remove(0);
 			time = event.getTime();
 			for(Listener listener: listeners.get(event.getType())){
 				listener.listen(event);
 			}			
-			if (time > new Float(SimulatorView.getInstance().getTransientTime().getText())) {
+			if (time > new Long(SimulatorView.getInstance().getTransientTime().getText())*1000000l) {
 				switch (event.getType()) {
 				case SENDING_PACKAGE:
 					serverBroadcast++;
@@ -118,17 +119,18 @@ public class Simulator {
 		}
 		
 		if (time > 0) {
-			Float stationaryTime = time - new Float(SimulatorView.getInstance().getTransientTime().getText());
-			SimulatorView.getInstance().getServerBroadcast().setText(new Float(serverBroadcast*1000/stationaryTime).toString());
-			SimulatorView.getInstance().getRouteBroadcast().setText(new Float(routerBroadcast*1000/stationaryTime).toString());
-			SimulatorView.getInstance().getReceiverBroadcast().setText(new Float(receiverBroadcast*1000/stationaryTime).toString());
+			Long stationaryTime = time - new Long(SimulatorView.getInstance().getTransientTime().getText())*1000000l;
+			
+			SimulatorView.getInstance().getServerBroadcast().setText(new Float(serverBroadcast*1000*1000000l/stationaryTime).toString());
+			SimulatorView.getInstance().getRouteBroadcast().setText(new Float(routerBroadcast*1000*1000000l/stationaryTime).toString());
+			SimulatorView.getInstance().getReceiverBroadcast().setText(new Float(receiverBroadcast*1000*1000000l/stationaryTime).toString());
 		}
 		
 		updateChart();
 		updateIntervalConfidence();
 		
 		clearSimulator();
-		System.out.println(System.currentTimeMillis() - realTime);
+		System.out.println(System.nanoTime() - realTime);
 		realTime = System.currentTimeMillis();
 	}
 
@@ -159,18 +161,26 @@ public class Simulator {
 		backgroundTraffic = null;
 		maximumSegmentSize = null;
 		router = null;
-		time = (float) 0;
+		time = 0l;
 		serverBroadcast   = 0;
 		routerBroadcast   = 0;
 		receiverBroadcast = 0;
 	}
 
-	private static void sortEventBuffer(Float time) {
+	private static void sortEventBuffer(Long time) {
 		Collections.sort(eventBuffer);
 		updatePlot(time);
 	}
 
-	private static void updatePlot(Float time) {
+	public static List<Event> getEventBuffer() {
+		return eventBuffer;
+	}
+
+	public static void setEventBuffer(List<Event> eventBuffer) {
+		Simulator.eventBuffer = eventBuffer;
+	}
+
+	private static void updatePlot(Long time) {
 		Integer  value = 0;
 		
 		for (ServerGroup serverGroup : serverGroups) {
@@ -178,7 +188,7 @@ public class Simulator {
 				value += (int) Math.floor(server.getCwnd());
 				value /= Simulator.maximumSegmentSize;
 				if(series.get(server) == null) {
-					series.put(server, new HashMap<Float, Integer>());
+					series.put(server, new HashMap<Long, Integer>());
 				}
 				series.get(server).put(time, value);
 				value = 0;
@@ -240,7 +250,7 @@ public class Simulator {
 		for(i=0;i<nGroups;i++){
 			//Ler atraso de propagação do grupo i
 			line = reader.readLine();
-			ServerGroup group = new ServerGroup( Integer.parseInt(line) );
+			ServerGroup group = new ServerGroup( Long.parseLong(line)*1000000l );
 			serverGroups.add(group);
 			//Ler número de servidores no grupo i
 			line = reader.readLine();
@@ -258,10 +268,10 @@ public class Simulator {
 
 		//Ler tráfego de fundo
 		line = reader.readLine();
-		Float avgGustLength = Float.parseFloat(line);
+		Long avgGustLength = Long.parseLong(line);
 		line = reader.readLine();
-		Float avgGustInterval = Float.parseFloat(line);
-		backgroundTraffic = new BackgroundTraffic(avgGustLength, 1/avgGustInterval);
+		Long avgGustInterval = Long.parseLong(line);
+		backgroundTraffic = new BackgroundTraffic(avgGustLength, 1d/avgGustInterval);
 		
 		//Ler tamanho do buffer
 		line = reader.readLine();
@@ -279,9 +289,7 @@ public class Simulator {
 			}
 		}
 		
-		
 		reader.close();
-		router.startRouter();
 		for (Server server : servers) {
 			server.startServer();
 		}

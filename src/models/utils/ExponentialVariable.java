@@ -19,7 +19,7 @@ public class ExponentialVariable extends RandomVariable {
 	}
 	
 	public static void main(String[] args) {
-		ExponentialVariable variable = new ExponentialVariable(1/24d);
+		ExponentialVariable variable = new ExponentialVariable(1);
 		SummaryStatistics stats = new SummaryStatistics();
 		for (int i = 0; i < 50000; i++) {
 			stats.addValue(variable.getSample());

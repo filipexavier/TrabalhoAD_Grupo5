@@ -21,14 +21,14 @@ public class ServerGroup {
 	/**
 	 * Tempo que um pacote demora desde o momento em que ele sai do servidor, até chegar ao roteador.
 	 */
-	private Integer broadcastDelay;
+	private Long broadcastDelay;
 
 	/**
 	 * Inicializa um grupo de servidores que compartilham o mesmo atraso informado. 
 	 * 
 	 * @param broadcastDelay atraso que um pacote sofre para ir do servidor até o roteador.
 	 */
-	public ServerGroup(Integer broadcastDelay) {
+	public ServerGroup(Long broadcastDelay) {
 		this.broadcastDelay = broadcastDelay;
 		servers = new LinkedList<Server>();
 	}
@@ -46,7 +46,7 @@ public class ServerGroup {
 	 * 
 	 * @return tempo que um pacote demora desde o momento em que ele sai do servidor, até chegar ao roteador.
 	 */
-	public Integer getBroadcastDelay() {
+	public Long getBroadcastDelay() {
 		return broadcastDelay;
 	}
 }

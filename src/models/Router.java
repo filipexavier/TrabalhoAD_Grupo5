@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import models.interfaces.Listener;
-import models.utils.ExponentialVariable;
 import models.utils.HighQualityRandom;
 import controller.Simulator;
 
@@ -42,11 +41,6 @@ public class Router implements Listener {
 	 * Lista que representa a fila de espera.
 	 */
 	private List<Event> buffer;
-	
-	/**
-	 * TODO: verificar se está sendo usada
-	 */
-	private ExponentialVariable sendVariable;
 
 	/**
 	 * Valor de wq usado pela política RED.
@@ -86,7 +80,7 @@ public class Router implements Listener {
 	/**
 	 * Armazena o tempo em que se iniciou o último período ocioso.
 	 */
-	private Float lastBusyPeriodTime;
+	private Long lastBusyPeriodTime;
 
 	/**
 	 * Constrói um roteador com a taxa fornecida.
@@ -111,12 +105,7 @@ public class Router implements Listener {
 		maxp = 0.02f;
 		avg = 0f;
 		count = 0; 
-		lastBusyPeriodTime =  0.0f;
-	}
-
-	// TODO: verificar a necessidade desse método
-	public void startRouter() {
-		sendVariable = new ExponentialVariable(rate/(1000.0*Simulator.maximumSegmentSize));
+		lastBusyPeriodTime =  0l;
 	}
 
 	/**
@@ -231,7 +220,7 @@ public class Router implements Listener {
 	 * @param event evento do tipo <code>EventType.DELIVER_PACKAGE</code>.
 	 */
 	private void listenDeliverPackage(Event event) {
-		Float time = (float) (event.getTime() + (1000.0*Simulator.maximumSegmentSize)/rate);
+		Long time = (event.getTime() + (1000000000l*Simulator.maximumSegmentSize)/rate);
 		Event serverEvent = (Event) event.getValue();
 		Simulator.shotEvent(EventType.PACKAGE_DELIVERED, time, serverEvent.getRtt(), serverEvent.getSender(), serverEvent.getValue());
 	}
