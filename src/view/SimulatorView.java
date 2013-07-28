@@ -295,7 +295,7 @@ public class SimulatorView {
 		panel_1.add(simulationTimeLabel);
 		
 		simulationTimeTextField = new JTextField();
-		simulationTimeTextField.setText("10000");
+		simulationTimeTextField.setText("100000");
 		panel_1.add(simulationTimeTextField);
 		simulationTimeTextField.setColumns(10);
 		
@@ -318,7 +318,7 @@ public class SimulatorView {
 		panel_1.add(lblTempoAtEstacionar);
 		
 		transientTime = new JTextField();
-		transientTime.setText("1000");
+		transientTime.setText("10000");
 		transientTime.setColumns(10);
 		panel_1.add(transientTime);
 		
