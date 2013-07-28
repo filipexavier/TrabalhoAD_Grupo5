@@ -2,54 +2,37 @@ package models.utils;
 
 import java.util.List;
 
+import org.apache.commons.math3.distribution.TDistribution;
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
+
 public class ConfidenceInterval {
-	public static double getAvarege(List<Double> data) {
-		double sum = 0.0;
+	private static SummaryStatistics stats;
+	private static TDistribution tDistribution;
 
-		if (data.size() > 0) {
-			for (double a : data)
-				sum += a;
-			sum = sum / data.size();
-		}
-
-		return sum;
-	}
-
-	public static double getVariance(List<Double> data) {
-		double avarege = getAvarege(data);
-		double temp = 0;
-
-		if (data.size() > 0) {
-			for (double a : data)
-				temp += (avarege - a) * (avarege - a);
-
-			temp = temp / data.size();
-		}
-
-		return temp;
-	}
-
-	public static double getDeviation(List<Double> data) {
-		return Math.sqrt(getVariance(data));
+	public static double getPrecision(List<Double> data, double t) {
+		return 100*t*stats.getStandardDeviation()/(stats.getMean()*Math.sqrt(stats.getN()));
 	}
 	
-	public static double getPrecision(List<Double> data) {
-		if (data.size() >= 30) {
-			return 100*1.645*getDeviation(data)/(getAvarege(data)*Math.sqrt(data.size()));
+	private static double getConfidenceIntervalWidth(SummaryStatistics summaryStatistics, double t) {
+		  return t * summaryStatistics.getStandardDeviation() / Math.sqrt(summaryStatistics.getN());
 		}
-		return 0;
-	}
 
 	public static String getConfidenceInterval(List<Double> data) {
 		if (data != null && data.size() > 0) {
-			double avarege = getAvarege(data);
-			double dp = getDeviation(data);
-			double z = 1.645;
+			stats = new SummaryStatistics();
+			for (Double d : data) {
+				stats.addValue(d);
+			}
+			tDistribution = new TDistribution(stats.getN() - 1);
+						
+			double avarege = stats.getMean();
+			
+			double t = tDistribution.inverseCumulativeProbability(1.0 - 0.1/2);
+			
+			double lowerLimit = avarege - getConfidenceIntervalWidth(stats, t);
+			double uperLimit = avarege + getConfidenceIntervalWidth(stats, t);
 
-			double lowerLimit = avarege - z * dp / Math.sqrt(data.size());
-			double uperLimit = avarege + z * dp / Math.sqrt(data.size());
-
-			return "(" + lowerLimit + ", " + uperLimit + ") largura: "+getPrecision(data);
+			return "(" + Math.round(lowerLimit * 10000) / 10000.0 + ", " + Math.round(uperLimit * 10000) / 10000.0 + ")";
 		}
 
 		return null;

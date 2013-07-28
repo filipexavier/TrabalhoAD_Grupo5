@@ -135,7 +135,7 @@ public class Simulator {
 		
 		SimulatorView.getInstance().getNumOfRuns().setText(numberOsRuns.toString());
 		
-		if (numberOsRuns >= 30) {
+		if (numberOsRuns >= 2) {
 			SimulatorView.getInstance().getServerCI().setText(ConfidenceInterval.getConfidenceInterval(serverAvarages));
 			SimulatorView.getInstance().getReceiverCI().setText(ConfidenceInterval.getConfidenceInterval(receiverAvarages));
 			SimulatorView.getInstance().getRouterCI().setText(ConfidenceInterval.getConfidenceInterval(routerAvarages));
