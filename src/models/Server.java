@@ -279,8 +279,8 @@ public class Server implements Listener {
 	 */
 	private Long getTimeOutTime(Event event) {
 		Long differenceBetweenRealAndExpectation = realReturnTime - expectedReturnTime;
-		deviationReturnTime += (long) (0.25*(Math.abs(differenceBetweenRealAndExpectation) - deviationReturnTime));
-		expectedReturnTime += (long) 0.125*differenceBetweenRealAndExpectation;
+		deviationReturnTime += (long) (Math.abs(differenceBetweenRealAndExpectation) - deviationReturnTime)/4;
+		expectedReturnTime += (long) differenceBetweenRealAndExpectation/8;
 		Long timeOutTime = expectedReturnTime + 4l*deviationReturnTime;
 		if (timeOutTime < group.getBroadcastDelay()) {
 			throw new RuntimeException("Tempo do timeout calculado errado");
@@ -304,6 +304,10 @@ public class Server implements Listener {
 		if (((Receiver)event.getSender()) == getReceiver()) {
 			
 			List<Object> sack = (List<Object>) event.getValue(); // pega o sack
+			/*
+			 * Atualizamos o tempo real que o pacote levou para ser transmitido.
+			 */
+			calcRealTime(event);
 
 			Integer ackValue = (Integer) sack.get(0); // extrai o ACK
 			Set<Integer> packageSequences = (Set<Integer>) sack.get(1); // extrai a sequência de pacotes recebidos corretamente
@@ -342,7 +346,7 @@ public class Server implements Listener {
 					 * <code>threshold = txwnd/2</code> 
 					 * <code>cwnd=threshold + 3*MSS = txwnd/2 + 3*MSS</code> 
 					 */
-					duplicatedAcks.put(acks, null);
+					duplicatedAcks.put(ackValue, 0);
 					
 					threshold = (double) Math.floor(cwnd/2);
 					
@@ -354,13 +358,7 @@ public class Server implements Listener {
 					restartSend(acks, event.getTime());
 					fastRetransmit = true;
 				}
-			} else {
-				/*
-				 * neste caso não é um ACK duplicado.
-				 * então atualizamos o tempo real que o pacote levou para ser transmitido.
-				 */
-				calcRealTime(event);
-				
+			} else {				
 				if(fastRetransmit) {
 					/*
 					 * se estiver em Fast Retransmit, 
