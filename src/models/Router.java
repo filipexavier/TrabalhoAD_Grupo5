@@ -214,8 +214,6 @@ public class Router implements Listener {
 	 * <p>
 	 * O evento disparado terá como <code>Sender</code> a estação trasmissora que está enviando o pacote,
 	 * para que este evento possa ser tratado pela sua estação receptora correspondente.
-	 * <p>
-	 * TODO: explicar o cálculo do time 
 	 * 
 	 * @param event evento do tipo <code>EventType.DELIVER_PACKAGE</code>.
 	 */

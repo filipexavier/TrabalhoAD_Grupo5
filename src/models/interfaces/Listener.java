@@ -4,7 +4,8 @@ import models.Event;
 
 /**
  *
- * Interface 
+ * Interface que deverá ser implementada por qualquer
+ * classe que queira escutar os eventos da simulação.
  *
  */
 public interface Listener {

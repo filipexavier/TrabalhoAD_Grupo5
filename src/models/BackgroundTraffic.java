@@ -76,10 +76,20 @@ public class BackgroundTraffic extends Server{
 		}
 	}
 
+	/**
+	 * Retorna a média do tamanho das rajadas obtido através das amostras das variáveis geométrica.
+	 * 
+	 * @return média do tamanho das rajadas
+	 */
 	public Long getAvgGustLength() {
 		return avgGustLength;
 	}
 
+	/**
+	 * Retorna a tempo médio entre rajadas obtido através das amostras da variável aleatória exponencial.
+	 * 
+	 * @return tempo médio entre rajadas
+	 */
 	public Double getAvgGustInterval() {
 		return avgGustInterval;
 	}

@@ -20,7 +20,7 @@ import controller.Simulator;
 public class Receiver implements Listener {
 
 	/**
-	 * Estação transmissora ligada a esta estação receptora.
+	 * Estação TCP transmissora ligada a esta estação receptora.
 	 */
 	private Server server;
 	
@@ -35,7 +35,7 @@ public class Receiver implements Listener {
 	private Integer nextAck;
 	
 	/**
-	 * Constrói uma estação receptora que irá escutar os eventos do tipo <code>EventType.PACKAGE_DELIVERED</code>.
+	 * Constrói uma estação TCP receptora que irá escutar os eventos do tipo <code>EventType.PACKAGE_DELIVERED</code>.
 	 * Por padrão, inicializa o próximo ACK a ser recebido como o ACK 0.
 	 */
 	public Receiver() {
