@@ -240,9 +240,11 @@ public class Simulator {
 					routerBroadcast++;
 					break;
 				case SACK:
+					updatePlot(time);
 					receiverBroadcast++;
 					break;
-				default:
+				case TIME_OUT:
+					updatePlot(time);
 					break;
 				}
 			}		
@@ -323,7 +325,6 @@ public class Simulator {
 	 */
 	private static void sortEventBuffer(Long time) {
 		Collections.sort(eventBuffer);
-		updatePlot(time);
 	}
 
 	/**
@@ -341,8 +342,10 @@ public class Simulator {
 				if(series.get(server) == null) {
 					series.put(server, new HashMap<Long, Integer>());
 				}
+				if (series.get(server).get(time) == null) {
+					series.get(server).put(time, value);
+				}
 				// armazena o valor de txwnd/MSS para aparecer no gráfico
-				series.get(server).put(time, value);
 				value = 0;
 			}
 		}			

@@ -132,7 +132,7 @@ public class Server implements Listener {
 		
 		Simulator.registerListener(EventType.SEND_PACKAGE, this);
 		Simulator.registerListener(EventType.SENDING_PACKAGE, this);
-		Simulator.registerListener(EventType.TIME_OUT, this);
+//		Simulator.registerListener(EventType.TIME_OUT, this);
 		Simulator.registerListener(EventType.SACK, this);
 		
 		lastAck = 0;
@@ -380,7 +380,8 @@ public class Server implements Listener {
 					 * a cada ACK recebido passa a ser de MSS/cwnd, ou seja, a janela irá aumentar de um MSS,
 					 * após o recebimento de um número de ACKs igual ao valor de cwnd
 					 */
-					Double numAcks = this.cwnd/Simulator.maximumSegmentSize;
+					System.out.println(event.getTime());
+					Double numAcks = Math.floor(this.cwnd/Simulator.maximumSegmentSize);
 					this.cwnd += Simulator.maximumSegmentSize/numAcks;
 				}
 				

@@ -425,7 +425,7 @@ public class SimulatorView {
 		for (Entry<Server, HashMap<Long, Integer>> entry : series.entrySet()) {
 			XYSeries serie = new XYSeries("txwnd/MSS " + entry.getKey());
 			for (Entry<Long, Integer> values : entry.getValue().entrySet()) {
-				Long time = values.getKey()/1000000l;
+				Long time = values.getKey();
 				if (time >= new Long(getTransientTime().getText())) {
 					serie.add(time, values.getValue());
 				}
