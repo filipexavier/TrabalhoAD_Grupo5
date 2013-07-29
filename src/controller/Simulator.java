@@ -121,9 +121,9 @@ public class Simulator {
 		if (time > 0) {
 			Long stationaryTime = time - new Long(SimulatorView.getInstance().getTransientTime().getText())*1000000l;
 			
-			SimulatorView.getInstance().getServerBroadcast().setText(new Float(serverBroadcast*1000*1000000l/stationaryTime).toString());
-			SimulatorView.getInstance().getRouteBroadcast().setText(new Float(routerBroadcast*1000*1000000l/stationaryTime).toString());
-			SimulatorView.getInstance().getReceiverBroadcast().setText(new Float(receiverBroadcast*1000*1000000l/stationaryTime).toString());
+			SimulatorView.getInstance().getServerBroadcast().setText(new Long(serverBroadcast*1000*1000000l/stationaryTime).toString());
+			SimulatorView.getInstance().getRouteBroadcast().setText(new Long(routerBroadcast*1000*1000000l/stationaryTime).toString());
+			SimulatorView.getInstance().getReceiverBroadcast().setText(new Long(receiverBroadcast*1000*1000000l/stationaryTime).toString());
 		}
 		
 		updateChart();
