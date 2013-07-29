@@ -132,7 +132,7 @@ public class Server implements Listener {
 		
 		Simulator.registerListener(EventType.SEND_PACKAGE, this);
 		Simulator.registerListener(EventType.SENDING_PACKAGE, this);
-//		Simulator.registerListener(EventType.TIME_OUT, this);
+		Simulator.registerListener(EventType.TIME_OUT, this);
 		Simulator.registerListener(EventType.SACK, this);
 		
 		lastAck = 0;
