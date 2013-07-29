@@ -2,6 +2,11 @@ package models.utils;
 
 import java.util.Random;
 
+/**
+ * 
+ * Implementação de um gerador de números aleatórios.
+ *
+ */
 @SuppressWarnings("serial")
 public class HighQualityRandom extends Random {
 //	  private Lock l = new ReentrantLock();
