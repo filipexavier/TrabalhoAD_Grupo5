@@ -24,8 +24,8 @@ public class BackgroundTraffic extends Server{
 	
 	private ExponentialVariable sendVariable;
 	private GeometricVariable gustLengthVariable;
-	private Float avgGustLength;
-	private Float avgGustInterval;
+	private Long avgGustLength;
+	private Double avgGustInterval;
 	
 	/**
 	 * Constrói um tráfego de fundo com a taxa fornecida. 
@@ -34,7 +34,7 @@ public class BackgroundTraffic extends Server{
 	 * 
 	 * @param rate taxa em que ocorre o tráfego de fundo.
 	 */
-	public BackgroundTraffic(Float avgGustLength, Float avgGustInterval) {
+	public BackgroundTraffic(Long avgGustLength, Double avgGustInterval) {
 		Simulator.registerListener(EventType.SEND_PACKAGE, this);
 		nextPackage = 0;
 		this.avgGustLength = avgGustLength;
@@ -47,10 +47,10 @@ public class BackgroundTraffic extends Server{
 	 * Este evento será tratado pelo próprio tráfego, que irá então enviar os seus pacotes.
 	 */
 	public void startBackgroundTraffic() {
-		sendVariable = new ExponentialVariable(getAvgGustInterval());
-		gustLengthVariable = new GeometricVariable(getAvgGustLength());
-		float sampleValue = (float) Math.ceil(sendVariable.getSample());
-		System.out.println("SendValue: " + sampleValue);
+		sendVariable = new ExponentialVariable(getAvgGustInterval()/1000000l);
+		gustLengthVariable = new GeometricVariable(1d*getAvgGustLength());
+		
+		Long sampleValue =  (long) Math.ceil(sendVariable.getSample());
 		Simulator.shotEvent(EventType.SEND_PACKAGE, sampleValue, sampleValue,this, null);
 	}
 
@@ -67,22 +67,20 @@ public class BackgroundTraffic extends Server{
 	public void listen(Event event) {
 		if (event.getSender().equals(this)) {
 			Integer gustLength = (int) Math.ceil(gustLengthVariable.getSample());
-			System.out.println("GustLength: " + gustLength);
 			for (int i = 0; i < gustLength; i++) {
 				Simulator.shotEvent(EventType.PACKAGE_SENT, event.getTime(), event.getRtt(), this, nextPackage);
 				nextPackage += Simulator.maximumSegmentSize;
 			}
-			int sampleValue = (int) Math.ceil(sendVariable.getSample());
-			System.out.println("SendValue: " + sampleValue);
+			Long sampleValue = (long) Math.ceil(sendVariable.getSample());
 			Simulator.shotEvent(EventType.SEND_PACKAGE, event.getTime() + sampleValue, null, this, null);
 		}
 	}
 
-	public Float getAvgGustLength() {
+	public Long getAvgGustLength() {
 		return avgGustLength;
 	}
 
-	public Float getAvgGustInterval() {
+	public Double getAvgGustInterval() {
 		return avgGustInterval;
 	}
 }

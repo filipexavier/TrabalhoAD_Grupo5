@@ -295,7 +295,7 @@ public class SimulatorView {
 		panel_1.add(simulationTimeLabel);
 		
 		simulationTimeTextField = new JTextField();
-		simulationTimeTextField.setText("100000");
+		simulationTimeTextField.setText("5000");
 		panel_1.add(simulationTimeTextField);
 		simulationTimeTextField.setColumns(10);
 		
@@ -318,7 +318,7 @@ public class SimulatorView {
 		panel_1.add(lblTempoAtEstacionar);
 		
 		transientTime = new JTextField();
-		transientTime.setText("10000");
+		transientTime.setText("1000");
 		transientTime.setColumns(10);
 		panel_1.add(transientTime);
 		
@@ -406,23 +406,26 @@ public class SimulatorView {
 		plot.setDataset(dataset);
 	}
 
-	public void updateChart(HashMap<Server, HashMap<Float, Integer>> series, HashMap<Float, Integer> bufferSize) {
+	public void updateChart(HashMap<Server, HashMap<Long, Integer>> series, HashMap<Long, Integer> bufferSize) {
 		JFreeChart chart = chartPanel.getChart();
 		XYPlot plot = (XYPlot) chart.getPlot();
 		
 		XYSeriesCollection dataset = (XYSeriesCollection) plot.getDataset();
-		for (Entry<Server, HashMap<Float, Integer>> entry : series.entrySet()) {
+		for (Entry<Server, HashMap<Long, Integer>> entry : series.entrySet()) {
 			XYSeries serie = new XYSeries("txwnd/MSS " + entry.getKey());
-			for (Entry<Float, Integer> values : entry.getValue().entrySet()) {
-				serie.add(values.getKey(), values.getValue());
+			for (Entry<Long, Integer> values : entry.getValue().entrySet()) {
+				Long time = values.getKey()/1000000l;
+				if (time >= new Long(getTransientTime().getText())) {
+					serie.add(time, values.getValue());
+				}
 			}
 			dataset.addSeries(serie);
 		}		
 		XYSeries buffer = new XYSeries("tamanho do buffer ");
-		for(Entry<Float, Integer> entry: bufferSize.entrySet() ){
-			buffer.add(entry.getKey(), entry.getValue());
+		for(Entry<Long, Integer> entry: bufferSize.entrySet() ){
+			buffer.add(entry.getKey()/1000000l, entry.getValue());
 		}
-		dataset.addSeries(buffer);
+//		dataset.addSeries(buffer);
 	}
 	
 	public JTextField getSimulationTimeTextField() {

@@ -4,9 +4,9 @@ import models.abstracts.RandomVariable;
 
 public class GeometricVariable extends RandomVariable {
 
-	private Float mean;
+	private Double mean;
 	
-	public GeometricVariable(Float mean) {
+	public GeometricVariable(Double mean) {
 		this.mean = mean;
 	}
 	

@@ -17,7 +17,7 @@ public class Event implements Comparable<Event>{
 	/**
 	 * Tempo na simulação em que esse evento ocorreu
 	 */
-	private Float time;
+	private Long time;
 	
 	/**
 	 * Referência para quem enviou esse evento
@@ -30,7 +30,7 @@ public class Event implements Comparable<Event>{
 	private Object value; // pacote (TIMEOUT, ACK)
 	//TODO: Acho que tem que criar outro value, pra guardar as listas do SACK
 
-	private Float rtt;
+	private Long rtt;
 
 	/**
 	 * 
@@ -41,12 +41,12 @@ public class Event implements Comparable<Event>{
 	 * @param sender quem enviou o evento
 	 * @param value informação referente ao evento
 	 */
-	public Event(EventType eventType, Float time, Float rtt, Object sender, Object value) {
+	public Event(EventType eventType, Long time, Long rtt, Object sender, Object value) {
 		this.type = eventType;
 		this.time = time;
 		this.sender = sender;
 		this.value = value;
-		this.setRtt(rtt);
+		this.rtt = rtt;
 	}
 
 	/**
@@ -55,7 +55,19 @@ public class Event implements Comparable<Event>{
 	 */
 	@Override
 	public int compareTo(Event arg0) {
-		return this.time.compareTo(arg0.time);
+		Integer compareTime = this.time.compareTo(arg0.time);
+		if (compareTime == 0) {
+			if (this.getType().equals(arg0.getType())) {
+				return 0;
+			} else if(this.getType().equals(EventType.SACK)) {
+				return -1;
+			} else {
+				return 0;
+			}
+				
+		} else {
+			return compareTime;
+		}
 	}
 
 	/**
@@ -78,7 +90,7 @@ public class Event implements Comparable<Event>{
 	 * Retorna o tempo em que este evento o ocorreu na simulação.
 	 * @return tempo em que o evento ocorreu.
 	 */
-	public Float getTime() {
+	public Long getTime() {
 		return time;
 	}
 	
@@ -86,7 +98,7 @@ public class Event implements Comparable<Event>{
 	 * Substitui o tempo armazenado em que o evento ocorreu pelo novo tempo especificado.
 	 * @param time tempo em que o evento ocorreu.
 	 */
-	public void setTime(Float time) {
+	public void setTime(Long time) {
 		this.time = time;
 	}
 
@@ -131,11 +143,7 @@ public class Event implements Comparable<Event>{
 		return "<Tipo: "+type+" Tempo: "+time+" Sender: "+sender+" Valor: "+value+">";
 	}
 
-	public Float getRtt() {
+	public Long getRtt() {
 		return rtt;
 	}
-
-	public void setRtt(Float rtt) {
-		this.rtt = rtt;
-	}	
 }
