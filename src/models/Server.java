@@ -462,14 +462,14 @@ public class Server implements Listener {
 	private void restartSend(Integer nextPackage, Long time) {
 		List<Integer> removedPackges = new ArrayList<Integer>();
 		
-		for (Integer packge : sendedPackages) {
-			if (!receivedAckPackages.contains(sendedPackages)) {
-				removedPackges.add(packge);
-
-				Simulator.cancelEvent(EventType.TIME_OUT, this, packge);
-				Simulator.cancelEvent(EventType.SEND_PACKAGE, this, packge);
-			}
-		}
+//		for (Integer packge : sendedPackages) {
+//			if (!receivedAckPackages.contains(sendedPackages)) {
+//				removedPackges.add(packge);
+//
+//				Simulator.cancelEvent(EventType.TIME_OUT, this, packge);
+//				Simulator.cancelEvent(EventType.SEND_PACKAGE, this, packge);
+//			}
+//		}
 		sendedPackages.removeAll(removedPackges);
 		this.nextPackage = nextPackage;
 		numOfPackagesToSend = getNumberOfPackagesToSend();
