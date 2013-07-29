@@ -4,7 +4,7 @@ package models;
  * 
  * Implementação da classe que será responsável por representar um evento dentro da simulação.
  * 
- * TODO: detalhar
+ * @see EventType
  *
  */
 public class Event implements Comparable<Event>{
