@@ -28,36 +28,142 @@ import view.SimulatorView;
 
 /**
  * 
+ * Classe responsável por controlar e inicializar toda a simulação das sessões TCP.
+ *<p>
+ * Realiza a leitura do arquivo de entrada, inicia os 4 modelos que interagem entre si 
+ * e gerencia a comunicação entre eles.
+ * <p> 
+ * Os 4 modelos que iremos simular são: A estação transmissora. representada pela classe <code>Server</code>, 
+ * o roteador, representado pela classe <code>Router</code>, receptor, <code>Receptor</code>, e o tráfego de fundo, <code>BackgroundTraffic</code>.
  * 
- *
+ * @see Server, Receptor, Router, BackgroundTraffic
  */
 public class Simulator {
 
+	/**
+	 * Lista dos grupos de servidores que caracterizam um tipo de estação transmissora.
+	 * Cada grupo de servidores define um único atraso de propagação para todos os servidores pertencentes ao mesmo.
+	 */
 	public static List<ServerGroup> serverGroups;
+	
+	/**
+	 * Mapa para registrar os objetos que escutarão um determinado evento.
+	 * <p>
+	 * Uma chave no map é um enumerável do tipo <code>EventType</code>,
+	 * cujo valor armazena um conjunto com referências para todos os objetos 
+	 * que se registraram para escutar este tipo de evento.
+	 */
 	public static Map< EventType, Set<Listener> > listeners;
+	
+	/**
+	 * Canal de eventos para comunicação interna entre as classes.
+	 */
 	public static List<Event> eventBuffer;
+	
+	/**
+	 * Tráfego de fundo que será usado para congestionar o tráfego das sessões TCP.
+	 */
 	public static BackgroundTraffic backgroundTraffic;
+	
+	/**
+	 * Tamanho máximo fixo em bytes no qual os pacotes IP são transmitidos.
+	 */
 	public static Integer maximumSegmentSize;
+	
+	/**
+	 * Roteador por onde passam os pacotes das sessões TCP, que será o gargalo da nossa simulação
+	 */
 	public static Router router;
+	
+	/**
+	 * Caminho do arquivo de entrada de onde serão lidos os dados de entrada. 
+	 */
 	public static final String FILENAME = "simulador.txt";
 	
+	/**
+	 * Armazena o instante de tempo em nanosegundos no qual se encontra a simulação
+	 */
 	public static Long time = 0l;
+	
+	/**
+	 * Variável de suporte à criação das estações TCP transmissoras.
+	 */
 	public static Integer serverId;
 	
+	/**
+	 * Armazena dados estatísticos do comportamento dos servidores 
+	 * ao longo da simulação, para serem plotados nos gráficos.
+	 */
 	public static HashMap<Server, HashMap<Long, Integer>> series;
+	
+	/**
+	 * Armazena dados estatístios do comportamento do tamanho do buffer
+	 * ao longo da simulação.
+	 */
 	public static HashMap<Long, Integer> bufferSize;
+	
+	/**
+	 * Taxa de saída dos pacotes da estações TCP transmissoras ao longo da simulação.
+	 */
 	public static Integer serverBroadcast   = 0;
+	
+	/**
+	 * Taxa de saída dos pacotes roteador ao longo da simulação.
+	 */
 	public static Integer routerBroadcast   = 0;
+	
+	/**
+	 * Taxa de chegada dos pacotes às estações TCP receptoras ao longo da simulação.
+	 */
 	public static Integer receiverBroadcast = 0;
 
+	/**
+	 * Armazena as taxas de saída dos servidores ao longo da rodadas de simulação,
+	 * para serem usadas na geração dos intervalos de confiança.
+	 */
 	public static List<Double> serverAverages = new ArrayList<Double>();
+	
+	/**
+	 * Armazena as taxas de saída do roteador ao longo da rodadas de simulação,
+	 * para serem usadas na geração dos intervalos de confiança.
+	 */
 	public static List<Double> routerAverages = new ArrayList<Double>();
+	
+	/**
+	 * Armazena as taxas de chegada aos receptores ao longo da rodadas de simulação,
+	 * para serem usadas na geração dos intervalos de confiança.
+	 */
 	public static List<Double> receiverAverages = new ArrayList<Double>();
 	
+	/**
+	 * Regista um <code>Listener</code> para um determinado tipo de evento.
+	 * <p>
+	 * Este listener a partir de então será acionado toda vez que 
+	 * um evento desste tipo ocorrer.
+	 * 
+	 * @param eventType tipo de evento a ser escutado.
+	 * @param listener objeto que irá escutar os eventos.
+	 */
 	public static void registerListener(EventType eventType, Listener listener) {
 		listeners.get(eventType).add(listener);
 	}
 	
+	/**
+	 * Dispara um evento de um determinado tipo <code>EventType</code>.
+	 * <p>
+	 * Haverá a criação de um <code>Event</code>, de acordo com os parâmetros passados.
+	 * Tal evento será adicionado na estrutura de controle dos eventos, 
+	 * para fazer os eventos acontecerem no instante de tempo especificado.
+	 *  <p>
+	 *  Caso o tempo especificado esteja atrasado em relação ao instante de tempo atual da simulação,
+	 *  uma <code>RuntimeException</code> é lançada, parando imediatamente a simulação.
+	 *  
+	 * @param eventType tipo de evento disparado.
+	 * @param time instante de tempo na simulação que ele ocorre, em nanosegundos.
+	 * @param rtt tempo esperado para que esse evento gere uma ação. Usado somente em alguns casos, este parâmetro é opcional.
+	 * @param sender objeto que está disparando o evento.
+	 * @param value informações extras específicas para cada tipo de evento.
+	 */
 	public static void shotEvent(EventType eventType, Long time, Long rtt, Object sender, Object value) {
 		Event event = new Event(eventType, time, rtt,sender, value);
 		eventBuffer.add(event);
@@ -67,6 +173,13 @@ public class Simulator {
 	}
 	
 	/** Cancela(exclui) evento referente a este pacote */
+	/**
+	 * Cancela a realização de um evento disparado.
+	 * 
+	 * @param eventType tipo de evento a ser cancelado.
+	 * @param sender objeto que enviou o evento.
+	 * @param value informações específicas do evento.
+	 */
 	public static void cancelEvent(EventType eventType, Object sender, Object value){
 		Iterator<Event> it = eventBuffer.iterator();
 		while( it.hasNext()){
@@ -78,29 +191,47 @@ public class Simulator {
 		}
 	}
 
+	/**
+	 * Inicia uma rodade da simulação, de acordo com os dados especificados no arquivo de entrada.
+	 * 
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
 	public static void startSimulator() throws IOException, InterruptedException {
+		/* inicializa as variáveis do simulador */
 		serverId = 1;
 		eventBuffer = new ArrayList<Event>();
 		listeners = new HashMap<EventType, Set<Listener>>();
 		series = new HashMap<Server, HashMap<Long, Integer>>();
 		bufferSize = new HashMap<Long, Integer>();
 		
+		/* inicializa o mapa de eventos */
 		for(EventType type: EventType.values()){
 			listeners.put( type, new HashSet<Listener>() );
 		}
-		readInputFile();		
-		printInputData();
+		
+		readInputFile(); // le os dados de entrada		
+		printInputData(); // imprime no console os dados lidos 
 
+		/* variável que irá manipular os eventos que irão ocorrer durante a simulação */
 		Event event = null;
+		/* pega o tempo de duração da simulação */
 		Integer simulationTime = Integer.parseInt(SimulatorView.getInstance().getSimulationTimeTextField().getText());
+		/* armazena o tempo em nanosegundos que a simulação irá começar */
 		long realTime = System.nanoTime();
 		while(eventBuffer.size() > 0 && (event == null || event.getTime() < simulationTime*1000000l)){
+			/*
+			 * a cada loop, um evento será processado, e todos os seus listeners serão acionados
+			 */
 			event = eventBuffer.remove(0);
 			time = event.getTime();
 			for(Listener listener: listeners.get(event.getType())){
 				listener.listen(event);
 			}			
 			if (time > new Long(SimulatorView.getInstance().getTransientTime().getText())*1000000l) {
+				/*
+				 * coleta dados estatísticos para geração dos intervalos de confiança
+				 */
 				switch (event.getType()) {
 				case SENDING_PACKAGE:
 					serverBroadcast++;
@@ -115,9 +246,14 @@ public class Simulator {
 					break;
 				}
 			}		
+			/* ordena a lista de eventos para que o próximo evento a ser processado corresponda ao próximo evento no tempo */
 			sortEventBuffer(time);
 		}
 		
+		/*
+		 * a partir daqui, serão exibidos dados sobre a rodada de simulação
+		 * além disso, o intervalo de confiança será atualizado 
+		 */
 		if (time > 0) {
 			Long stationaryTime = time - new Long(SimulatorView.getInstance().getTransientTime().getText())*1000000l;
 			
@@ -129,15 +265,21 @@ public class Simulator {
 		updateChart();
 		updateIntervalConfidence();
 		
-		clearSimulator();
+		clearSimulator(); // limpa o simulador, para que uma nova simulação possa acontecer
 		System.out.println(System.nanoTime() - realTime);
 		realTime = System.currentTimeMillis();
 	}
 
+	/**
+	 * Atualiza o gráfico na interface gráfica com os dados da simulação.
+	 */
 	private static void updateChart() {
 		SimulatorView.getInstance().updateChart(series, bufferSize);
 	}
 
+	/**
+	 * Atualiza os intervalos de confiança, levando em consideração todas as rodadas já efetuadas.
+	 */
 	private static void updateIntervalConfidence() {
 		serverAverages.add(new Double(SimulatorView.getInstance().getServerBroadcast().getText()));
 		receiverAverages.add(new Double(SimulatorView.getInstance().getReceiverBroadcast().getText()));
@@ -154,6 +296,10 @@ public class Simulator {
 		}
 	}
 
+	/**
+	 * Limpa as variáveis do <code>Simulator</code>, 
+	 * preparando para uma nova rodada de simulação.
+	 */
 	private static void clearSimulator() {
 		serverGroups = null;
 		listeners = null;
@@ -167,19 +313,24 @@ public class Simulator {
 		receiverBroadcast = 0;
 	}
 
+	/**
+	 * Ordena a lista de eventos em ordem crescente
+	 * do instante de tempo em que eles ocorrem na simulação.
+	 * <p>
+	 * Também atualiza as informações que serão exibidas na interface.
+	 *
+	 * @param time instante de tempo em nanosegundos.
+	 */
 	private static void sortEventBuffer(Long time) {
 		Collections.sort(eventBuffer);
 		updatePlot(time);
 	}
 
-	public static List<Event> getEventBuffer() {
-		return eventBuffer;
-	}
-
-	public static void setEventBuffer(List<Event> eventBuffer) {
-		Simulator.eventBuffer = eventBuffer;
-	}
-
+	/**
+	 * Atualiza as informações da simulação que serão exibidas na interface.
+	 * <p>
+	 * @param time instante de tempo em nanosegundos
+	 */
 	private static void updatePlot(Long time) {
 		Integer  value = 0;
 		
@@ -190,6 +341,7 @@ public class Simulator {
 				if(series.get(server) == null) {
 					series.put(server, new HashMap<Long, Integer>());
 				}
+				// armazena o valor de txwnd/MSS para aparecer no gráfico
 				series.get(server).put(time, value);
 				value = 0;
 			}
@@ -198,6 +350,9 @@ public class Simulator {
 		bufferSize.put(time, router.getBuffer().size());
 	}
 
+	/**
+	 * Imprime no console os valores lidos do arquivo de entrada.
+	 */
 	private static void printInputData() {
 		System.out.println("	================ LOG DADOS DO ARQUIVO =================");
 		System.out.println("	=======================================================\n");
@@ -220,6 +375,11 @@ public class Simulator {
 		
 	}
 
+	/**
+	 * Realiza a leitura do arquivo de dados das informações necessárias para a simulação.
+	 * 
+	 * @throws IOException
+	 */
 	private static void readInputFile() throws IOException {
 
 		BufferedReader reader = null;

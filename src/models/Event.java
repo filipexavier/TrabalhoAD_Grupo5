@@ -28,7 +28,6 @@ public class Event implements Comparable<Event>{
 	 * Armazena informação que o evento carrega, sendo específico para cada tipo de evento.
 	 */
 	private Object value; // pacote (TIMEOUT, ACK)
-	//TODO: Acho que tem que criar outro value, pra guardar as listas do SACK
 
 	private Long rtt;
 

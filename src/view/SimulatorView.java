@@ -32,6 +32,17 @@ import java.awt.Component;
 import javax.swing.Box;
 import java.awt.Dimension;
 
+/**
+ * 
+ * Classe responsável por exibir as informações da simulação de maneira amigável
+ * e de fácil compreensão.
+ * <p>
+ * Utiliza os recursos disponibilizados pelo widget toolkit <code>Swing</code>.
+ * Todo o design foi criado com a ajuda do plugin WindowBuilder, disponível no IDE Eclipse. 
+ * 
+ * @see Simulator
+ * 
+ */
 public class SimulatorView {
 
 	private JFrame frame;
