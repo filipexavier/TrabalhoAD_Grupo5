@@ -346,7 +346,7 @@ public class Server implements Listener {
 					 * <code>threshold = txwnd/2</code> 
 					 * <code>cwnd=threshold + 3*MSS = txwnd/2 + 3*MSS</code> 
 					 */
-					duplicatedAcks.put(acks, null);
+					duplicatedAcks.put(ackValue, 0);
 					
 					threshold = (double) Math.floor(cwnd/2);
 					
