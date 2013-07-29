@@ -155,7 +155,7 @@ public class Server implements Listener {
 	 */
 	public void startServer() {
 		cwnd = new Double(Simulator.maximumSegmentSize);
-		Simulator.shotEvent(EventType.SEND_PACKAGE, startedTime, null, this, null);
+		Simulator.shotEvent(EventType.SEND_PACKAGE, startedTime, null, this, nextPackage);
 	}
 	
 	/**
@@ -252,7 +252,7 @@ public class Server implements Listener {
 			Simulator.shotEvent(EventType.PACKAGE_SENT, event.getTime() + group.getBroadcastDelay(), event.getRtt(), this, event.getValue());
 			
 			if (numOfPackagesToSend > 0) {
-				Simulator.shotEvent(EventType.SEND_PACKAGE, event.getTime(), null, this, null);
+				Simulator.shotEvent(EventType.SEND_PACKAGE, event.getTime(), null, this, nextPackage);
 			}	
 		}
 	}
@@ -355,7 +355,7 @@ public class Server implements Listener {
 					/*
 					 * o pacote é então reenviado
 					 */
-					restartSend(acks, event.getTime());
+					restartSend(ackValue, event.getTime());
 					fastRetransmit = true;
 				}
 			} else {				
@@ -394,7 +394,7 @@ public class Server implements Listener {
 				updateBroadcastWindow(ackValue); // atualiza a janela de transferência
 				
 				numOfPackagesToSend = getNumberOfPackagesToSend(); // atualiza o número de pacotes restantes a serem enviados
-				Simulator.shotEvent(EventType.SEND_PACKAGE, event.getTime(), event.getRtt(), this, null); // lança o evento para enviar o próximo ACK da fila
+				Simulator.shotEvent(EventType.SEND_PACKAGE, event.getTime(), event.getRtt(), this, nextPackage); // lança o evento para enviar o próximo ACK da fila
 			}
 		}
 	}
@@ -474,7 +474,7 @@ public class Server implements Listener {
 		this.nextPackage = nextPackage;
 		numOfPackagesToSend = getNumberOfPackagesToSend();
 		
-		Simulator.shotEvent(EventType.SEND_PACKAGE, time, null, this, null);
+		Simulator.shotEvent(EventType.SEND_PACKAGE, time, null, this, nextPackage);
 	}
 
 	/**

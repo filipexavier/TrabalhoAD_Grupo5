@@ -184,7 +184,7 @@ public class Simulator {
 		Iterator<Event> it = eventBuffer.iterator();
 		while( it.hasNext()){
 			Event event = it.next();
-			if(event.getType().equals(eventType) && (event.getValue() == null || event.getValue().equals(value)) && event.getSender().equals(sender)){
+			if(event.getType().equals(eventType) && (event.getValue().equals(value)) && event.getSender().equals(sender)){
 				it.remove();
 				break;
 			}
